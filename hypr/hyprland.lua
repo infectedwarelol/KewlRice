@@ -185,8 +185,259 @@ function ShowDesktopToggle()
 end
 hl.bind(mainMod .. " + D", ShowDesktopToggle)
 
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/task-view/task_view.py"))
+local overviewState = nil
+local overviewClickBind = nil
+local overviewEscapeBind = nil
+local overviewGap = 20
+
+local function overviewGeometry(address)
+    for _, w in ipairs(hl.get_windows()) do
+        if w.address == address then
+            return { x = w.at.x, y = w.at.y, w = w.size.x, h = w.size.y, floating = w.floating }
+        end
+    end
+    return nil
+end
+
+local function overviewMoved(a, b)
+    if not a or not b then
+        return false
+    end
+    return math.abs(a.x - b.x) > 3 or math.abs(a.y - b.y) > 3 or math.abs(a.w - b.w) > 3 or math.abs(a.h - b.h) > 3
+end
+
+local function overviewPlace(address, g)
+    local target = "address:" .. address
+    hl.dispatch(hl.dsp.window.resize({ x = math.floor(g.w), y = math.floor(g.h), window = target }))
+    hl.dispatch(hl.dsp.window.move({ x = math.floor(g.x), y = math.floor(g.y), window = target }))
+end
+
+local function overviewSpread(total, sizes, gap)
+    local used = 0
+    for _, size in ipairs(sizes) do
+        used = used + size
+    end
+    local spacing = gap
+    if #sizes > 1 then
+        spacing = math.min(gap, (total - used) / (#sizes - 1))
+    end
+    local start = math.max(0, (total - used - spacing * (#sizes - 1)) / 2)
+    return start, spacing
+end
+
+local function overviewPack(windows, area, scale)
+    local rowList, heights, width = {}, {}, 0
+    for _, w in ipairs(windows) do
+        local size = w.fixed and w.actual or { w = math.floor(w.actual.w * scale), h = math.floor(w.actual.h * scale) }
+        w.target = size
+        local row = rowList[#rowList]
+        if not row or width + overviewGap + size.w > area.w then
+            row = {}
+            table.insert(rowList, row)
+            table.insert(heights, 0)
+            width = -overviewGap
+        end
+        table.insert(row, w)
+        width = width + overviewGap + size.w
+        heights[#heights] = math.max(heights[#heights], size.h)
+    end
+    local total = (#heights - 1) * overviewGap
+    for _, height in ipairs(heights) do
+        total = total + height
+    end
+    return rowList, heights, total <= area.h
+end
+
+function OverviewArrange()
+    local state = overviewState
+    if not state then
+        return
+    end
+    local area = state.area
+    local placed = {}
+    for i, w in ipairs(state.windows) do
+        local g = overviewGeometry(w.address)
+        if g then
+            w.actual = g
+            w.order = i
+            w.fixed = w.requested and (g.w > w.requested.w + 3 or g.h > w.requested.h + 3)
+            table.insert(placed, w)
+        end
+    end
+    table.sort(placed, function(a, b)
+        if a.actual.h ~= b.actual.h then
+            return a.actual.h > b.actual.h
+        end
+        return a.order < b.order
+    end)
+    local rowList, heights, fits
+    local scale = 1.0
+    while true do
+        rowList, heights, fits = overviewPack(placed, area, scale)
+        if fits or scale <= 0.3 then
+            break
+        end
+        scale = scale - 0.05
+    end
+    for _, row in ipairs(rowList) do
+        table.sort(row, function(a, b) return a.order < b.order end)
+    end
+    local top, rowGap = overviewSpread(area.h, heights, overviewGap)
+    local y = area.y + top
+    for i, row in ipairs(rowList) do
+        local widths = {}
+        for _, w in ipairs(row) do
+            table.insert(widths, w.target.w)
+        end
+        local left, columnGap = overviewSpread(area.w, widths, overviewGap)
+        local x = area.x + left
+        for _, w in ipairs(row) do
+            overviewPlace(w.address, { x = x, y = y + (heights[i] - w.target.h) / 2, w = w.target.w, h = w.target.h })
+            x = x + w.target.w + columnGap
+        end
+        y = y + heights[i] + rowGap
+    end
+    hl.exec_cmd("sleep 0.25; hyprctl dispatch OverviewRecord")
+end
+
+function OverviewRecord()
+    if not overviewState then
+        return
+    end
+    for _, w in ipairs(overviewState.windows) do
+        w.shown = overviewGeometry(w.address)
+    end
+end
+
+function OverviewClose(chosen)
+    if not overviewState then
+        return
+    end
+    local state = overviewState
+    overviewState = nil
+    overviewClickBind:set_enabled(false)
+    overviewEscapeBind:set_enabled(false)
+    for _, w in ipairs(state.windows) do
+        w.arranged = overviewMoved(w.shown, overviewGeometry(w.address))
+        hl.dispatch(hl.dsp.window.move({ workspace = w.workspace, window = "address:" .. w.address, follow = false }))
+    end
+    for _, w in ipairs(hl.get_windows({ workspace = "special:overview" })) do
+        hl.dispatch(hl.dsp.window.move({ workspace = state.workspace, window = "address:" .. w.address, follow = false }))
+    end
+    local special = hl.get_active_special_workspace()
+    if special and special.name == "special:overview" then
+        hl.dispatch(hl.dsp.workspace.toggle_special("overview"))
+    end
+    for _, w in ipairs(state.windows) do
+        if not w.arranged then
+            if w.floating then
+                overviewPlace(w.address, w.original)
+            else
+                local now = overviewGeometry(w.address)
+                if now and now.floating then
+                    hl.dispatch(hl.dsp.focus({ window = "address:" .. w.address }))
+                    hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
+                end
+            end
+            if w.fullscreen > 0 then
+                hl.dispatch(hl.dsp.focus({ window = "address:" .. w.address }))
+                hl.dispatch(hl.dsp.window.fullscreen({ action = "set" }))
+            end
+        end
+    end
+    local target = chosen or state.focused
+    if target then
+        hl.dispatch(hl.dsp.focus({ window = "address:" .. target }))
+    end
+end
+
+function OverviewToggle()
+    hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/overview.mp3")
+    if overviewState then
+        OverviewClose(nil)
+        return
+    end
+    local windows = {}
+    for _, w in ipairs(hl.get_windows()) do
+        if w.mapped and w.workspace then
+            table.insert(windows, {
+                address = w.address,
+                workspace = w.workspace.name,
+                fullscreen = w.fullscreen,
+                floating = w.floating,
+                original = { x = w.at.x, y = w.at.y, w = w.size.x, h = w.size.y },
+            })
+        end
+    end
+    if #windows == 0 then
+        return
+    end
+    local active = hl.get_active_window()
+    local monitor = hl.get_active_monitor()
+    overviewState = { windows = windows, focused = active and active.address, workspace = hl.get_active_workspace().name }
+
+    local reserved = monitor.reserved
+    local areaX = monitor.x + reserved.left + overviewGap
+    local areaY = monitor.y + reserved.top + overviewGap
+    local areaW = monitor.width / monitor.scale - reserved.left - reserved.right - 2 * overviewGap
+    local areaH = monitor.height / monitor.scale - reserved.top - reserved.bottom - 2 * overviewGap
+    local columns, rows, best = 1, #windows, -1
+    for c = 1, #windows do
+        local r = math.ceil(#windows / c)
+        local w = (areaW - (c - 1) * overviewGap) / c
+        local h = (areaH - (r - 1) * overviewGap) / r
+        local tile = math.min(w, h * 1.6)
+        if tile > best then
+            columns, rows, best = c, r, tile
+        end
+    end
+    local cellW = (areaW - (columns - 1) * overviewGap) / columns
+    local cellH = (areaH - (rows - 1) * overviewGap) / rows
+    overviewState.area = { x = areaX, y = areaY, w = areaW, h = areaH }
+    overviewState.rows = rows
+
+    for i, w in ipairs(windows) do
+        local target = "address:" .. w.address
+        if w.fullscreen > 0 then
+            hl.dispatch(hl.dsp.focus({ window = target }))
+            hl.dispatch(hl.dsp.window.fullscreen({ action = "unset" }))
+        end
+        hl.dispatch(hl.dsp.window.move({ workspace = "special:overview", window = target, follow = false }))
+        hl.dispatch(hl.dsp.window.float({ action = "set", window = target }))
+        local column = (i - 1) % columns
+        local row = math.floor((i - 1) / columns)
+        w.row = row + 1
+        local ratio = math.max(0.75, math.min(1.9, w.original.w / math.max(1, w.original.h)))
+        local tileW, tileH = cellW * 0.94, cellW * 0.94 / ratio
+        if tileH > cellH * 0.94 then
+            tileH = cellH * 0.94
+            tileW = tileH * ratio
+        end
+        w.requested = { w = math.floor(tileW), h = math.floor(tileH) }
+        overviewPlace(w.address, {
+            x = areaX + column * (cellW + overviewGap) + (cellW - tileW) / 2,
+            y = areaY + row * (cellH + overviewGap) + (cellH - tileH) / 2,
+            w = tileW,
+            h = tileH,
+        })
+    end
+    hl.dispatch(hl.dsp.workspace.toggle_special("overview"))
+    hl.exec_cmd("sleep 0.25; hyprctl dispatch OverviewArrange")
+    overviewClickBind:set_enabled(true)
+    overviewEscapeBind:set_enabled(true)
+end
+
+function OverviewPick()
+    local picked = hl.get_active_window()
+    OverviewClose(picked and picked.address)
+end
+
+hl.bind(mainMod .. " + A", OverviewToggle)
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/snap-layouts/snap_layouts.py"))
+overviewClickBind = hl.bind("mouse:272", OverviewPick)
+overviewEscapeBind = hl.bind("Escape", function() OverviewClose(nil) end)
+overviewClickBind:set_enabled(false)
+overviewEscapeBind:set_enabled(false)
 
 hl.bind("ALT + Tab", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/window-switcher/window_switcher.py $(date +%s.%N)"), { non_consuming = true, dont_inhibit = true })
 hl.on("input.keyboard.key", function(keycode, _, state)
@@ -325,11 +576,4 @@ hl.window_rule({
     match = { class = "^snipping-tool$", title = "^Snipping overlay$" },
 
     no_anim = true,
-})
-
-hl.layer_rule({
-    name  = "blur-task-view",
-    match = { namespace = "^task-view$" },
-
-    blur = true,
 })

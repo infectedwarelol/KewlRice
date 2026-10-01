@@ -20,7 +20,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg gtk-layer-shell
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg
 ```
 
 ## Install
@@ -50,7 +50,6 @@ cp applications/snipping-tool.desktop ~/.local/share/applications/
 chmod +x ~/.config/hypr/window-switcher/window_switcher.py
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
-chmod +x ~/.config/hypr/task-view/task_view.py
 ```
 
 4. Pick a wallpaper. Save any image you like as `~/.config/hypr/wallpapers/spirited-away-chihiro.png`, or change that path in `hyprland.lua` to point at your own image:
@@ -84,7 +83,7 @@ sudo localectl set-x11-keymap fr
 | Super + F or F11 | Fullscreen on and off |
 | Alt + Tab | Switch apps, hold Alt and tap Tab to pick one |
 | Super + D | Show the desktop, press again to get your windows back |
-| Super + A | Task View, see all your open apps at once and click one to jump to it |
+| Super + A | Show all your open apps at once, click one to jump to it |
 | Super + Z | Snap layouts, pick a layout and which app goes where |
 | Super + Shift + S | Take a snip, then draw on it, blur it or crop it |
 | Super + N | Hide the window |
@@ -98,7 +97,7 @@ Click the volume in the bar to change the volume of each app on its own.
 
 After a snip, right click the image to copy it or save it. Nothing gets saved unless you choose Save as. You can also open the Snipping Tool app from the launcher.
 
-In the Super + A view every app is shown at its real shape, even hidden ones. Press Escape or Super + A again to close it. To move or resize apps, hold Super and drag them with the left or right mouse button, or use Super + Z.
+In the Super + A view you can hold Super and drag an app with the left mouse button to move it, or with the right button to resize it. When you close the view, the apps you moved stay where you put them.
 
 ## Changing things
 
