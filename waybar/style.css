@@ -1,0 +1,32 @@
+@import url("file:///etc/xdg/waybar/style.css");
+
+window#waybar {
+    background-color: rgba(43, 58, 74, 0.7);
+    border-bottom: 1px solid rgba(230, 237, 243, 0.15);
+    color: #e6edf3;
+}
+
+#workspaces button.focused, #workspaces button.active,
+#clock, #cpu, #memory, #temperature, #pulseaudio, #pulseaudio.muted,
+#tray, #idle_inhibitor {
+    background-color: transparent;
+    color: #e6edf3;
+}
+
+#workspaces button.focused, #workspaces button.active {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+#workspaces button:hover, #pulseaudio:hover, #idle_inhibitor.activated {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #e6edf3;
+}
+
+#pulseaudio.muted {
+    color: rgba(230, 237, 243, 0.5);
+}
+
+#temperature.critical, #workspaces button.urgent, #tray > .needs-attention {
+    background-color: transparent;
+    color: #ff6b6b;
+}
