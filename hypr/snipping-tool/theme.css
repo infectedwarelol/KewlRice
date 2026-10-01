@@ -133,3 +133,7 @@ menuitem {
 menuitem:hover {
     background-color: rgba(74, 99, 128, 0.8);
 }
+
+.window-close-button:hover {
+    background-color: #e81123;
+}

@@ -1,6 +1,8 @@
 import datetime
+import json
 import math
 import os
+import subprocess
 
 import cairo
 import gi
@@ -114,13 +116,13 @@ class SnipEditor(Gtk.Window):
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(root)
-        root.pack_start(self.build_toolbar(), False, False, 0)
+        root.pack_start(self.drag_handle(self.build_toolbar()), False, False, 0)
 
         layers = Gtk.Overlay()
         root.pack_start(layers, True, True, 0)
         self.stack = Gtk.Stack()
         layers.add(self.stack)
-        self.stack.add_named(self.build_empty_page(), "empty")
+        self.stack.add_named(self.drag_handle(self.build_empty_page()), "empty")
         self.stack.add_named(self.build_canvas(), "canvas")
 
         self.toast_label = Gtk.Label()
@@ -140,10 +142,48 @@ class SnipEditor(Gtk.Window):
             self.context_menu.append(item)
         self.context_menu.show_all()
 
+        self.is_fullscreen = False
+        self.connect("window-state-event", self.on_window_state)
         self.connect("key-press-event", self.on_key)
         self.show_all()
         self.set_crop_controls(False)
         self.update_buttons()
+
+    def drag_handle(self, child):
+        handle = Gtk.EventBox()
+        handle.set_above_child(False)
+        handle.add(child)
+        handle.connect("button-press-event", self.on_handle_pressed)
+        return handle
+
+    def on_handle_pressed(self, _widget, event):
+        if event.button != 1 or event.type != Gdk.EventType.BUTTON_PRESS:
+            return False
+        self.begin_move_drag(event.button, int(event.x_root), int(event.y_root), event.time)
+        return True
+
+    def toggle_fullscreen(self):
+        if self.is_fullscreen:
+            self.unfullscreen()
+        else:
+            self.fullscreen()
+
+    def on_window_state(self, _widget, event):
+        self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
+        icon = "view-restore" if self.is_fullscreen else "view-fullscreen"
+        self.fullscreen_button.set_image(Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.LARGE_TOOLBAR))
+        self.fullscreen_button.set_tooltip_text("Exit full screen" if self.is_fullscreen else "Full screen")
+        return False
+
+    def minimize(self):
+        clients = json.loads(subprocess.run(["hyprctl", "clients", "-j"], capture_output=True, text=True).stdout or "[]")
+        mine = next((c for c in clients if c["pid"] == os.getpid() and c["title"] == self.get_title()), None)
+        if mine:
+            target = "address:" + mine["address"]
+            subprocess.run(
+                ["hyprctl", "dispatch", f'hl.dsp.window.move({{ workspace = "special:minimized", window = "{target}", follow = false }})'],
+                capture_output=True,
+            )
 
     def build_toolbar(self):
         bar = Gtk.Box(spacing=2)
@@ -210,6 +250,18 @@ class SnipEditor(Gtk.Window):
         self.redo_button.connect("clicked", lambda _: self.redo())
         center.pack_start(self.redo_button, False, False, 0)
         bar.set_center_widget(center)
+
+        close = icon_button("window-close", "Close")
+        close.get_style_context().add_class("window-close-button")
+        close.connect("clicked", lambda _: self.close())
+        bar.pack_end(close, False, False, 0)
+        self.fullscreen_button = icon_button("view-fullscreen", "Full screen")
+        self.fullscreen_button.connect("clicked", lambda _: self.toggle_fullscreen())
+        bar.pack_end(self.fullscreen_button, False, False, 0)
+        minimize = icon_button("window-minimize", "Minimize (bring it back with Super + Shift + N or Alt + Tab)")
+        minimize.connect("clicked", lambda _: self.minimize())
+        bar.pack_end(minimize, False, False, 0)
+        bar.pack_end(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL), False, False, 0)
 
         self.save_button = icon_button("document-save-as", "Save as (Ctrl+S)")
         self.save_button.connect("clicked", lambda _: self.save_as())
