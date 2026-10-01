@@ -1,0 +1,135 @@
+* {
+    font-family: "Noto Sans";
+    font-size: 10pt;
+    color: #e6edf3;
+    -gtk-icon-shadow: none;
+    text-shadow: none;
+}
+
+window.snip-editor {
+    background-color: rgba(43, 58, 74, 0.7);
+}
+
+window.snip-overlay {
+    background-color: #000000;
+}
+
+.snip-toolbar {
+    background-color: rgba(43, 58, 74, 0.92);
+    border-radius: 10px;
+    padding: 6px;
+}
+
+.snip-editor .snip-toolbar {
+    background-color: transparent;
+    border-radius: 0;
+    padding: 6px 10px;
+}
+
+button, menubutton > button, togglebutton {
+    background-image: none;
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    box-shadow: none;
+    padding: 6px 8px;
+    min-height: 0;
+    min-width: 0;
+}
+
+button:hover, menubutton > button:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+button:checked, button:active, menubutton > button:checked {
+    background-color: rgba(74, 99, 128, 0.8);
+}
+
+button:disabled {
+    opacity: 0.4;
+}
+
+popover, popover.background {
+    background-color: rgba(43, 58, 74, 0.97);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+popover button {
+    padding: 8px 12px;
+}
+
+.color-swatch {
+    padding: 4px;
+    border-radius: 50%;
+}
+
+.color-swatch:checked {
+    background-color: rgba(255, 255, 255, 0.35);
+}
+
+scale trough {
+    background-color: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 4px;
+    min-height: 4px;
+}
+
+scale highlight {
+    background-color: #4a6380;
+    border-radius: 4px;
+}
+
+scale slider {
+    background-color: #e6edf3;
+    background-image: none;
+    border: none;
+    border-radius: 50%;
+    min-width: 14px;
+    min-height: 14px;
+    box-shadow: none;
+}
+
+scrolledwindow, viewport, .snip-canvas-holder {
+    background-color: transparent;
+    border: none;
+}
+
+separator {
+    background-color: rgba(230, 237, 243, 0.15);
+    min-width: 1px;
+    margin: 6px 4px;
+}
+
+.snip-empty-title {
+    font-size: 18pt;
+    font-weight: bold;
+}
+
+.snip-empty-hint {
+    color: rgba(230, 237, 243, 0.7);
+}
+
+.snip-toast {
+    background-color: rgba(74, 99, 128, 0.95);
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin-bottom: 20px;
+}
+
+menu, .menu, .context-menu {
+    background-color: rgba(43, 58, 74, 0.97);
+    border: none;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+menuitem {
+    padding: 6px 16px;
+    border-radius: 6px;
+}
+
+menuitem:hover {
+    background-color: rgba(74, 99, 128, 0.8);
+}

@@ -10,6 +10,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
 - A click sound when an app opens or goes fullscreen, and the same click reversed when it closes
 - Notifications that go away after 5 seconds
+- A snipping tool like on Windows, with drawing, blur and crop
 - French keyboard layout (easy to change, see below)
 
 ## What you need
@@ -19,7 +20,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo
 ```
 
 ## Install
@@ -36,7 +37,7 @@ cd MyRice
 3. Copy everything into place:
 
 ```bash
-mkdir -p ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole
+mkdir -p ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole ~/.local/share/applications
 cp -r hypr/* ~/.config/hypr/
 cp waybar/* ~/.config/waybar/
 cp wofi/* ~/.config/wofi/
@@ -45,8 +46,10 @@ cp kitty/* ~/.config/kitty/
 cp mako/* ~/.config/mako/
 cp konsole/Transparent.colorscheme konsole/Transparent.profile ~/.local/share/konsole/
 cp konsole/konsolerc dolphin/dolphinrc ~/.config/
+cp applications/snipping-tool.desktop ~/.local/share/applications/
 chmod +x ~/.config/hypr/window-switcher/window_switcher.py
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
+chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 ```
 
 4. Log out and log back in. That's it.
@@ -75,6 +78,7 @@ sudo localectl set-x11-keymap fr
 | Super + D | Show the desktop, press again to get your windows back |
 | Super + A | Show all your open apps at once, click one to jump to it |
 | Super + Z | Snap layouts, pick a layout and which app goes where |
+| Super + Shift + S | Take a snip, then draw on it, blur it or crop it |
 | Super + N | Hide the window |
 | Super + Shift + N | Show the hidden windows |
 | Super + V | Make the window float |
@@ -83,6 +87,8 @@ sudo localectl set-x11-keymap fr
 | Super + M | Log out of Hyprland |
 
 Click the volume in the bar to change the volume of each app on its own.
+
+After a snip, right click the image to copy it or save it. Nothing gets saved unless you choose Save as. You can also open the Snipping Tool app from the launcher.
 
 In the Super + A view you can hold Super and drag an app with the left mouse button to move it, or with the right button to resize it. When you close the view, the apps you moved stay where you put them.
 

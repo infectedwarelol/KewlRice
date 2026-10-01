@@ -354,7 +354,7 @@ for i = 1, 10 do
 end
 
 hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("magic"))
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/snipping-tool/snipping_tool.py snip"))
 
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
@@ -406,7 +406,7 @@ hl.window_rule({
 
 hl.window_rule({
     name  = "transparent-apps",
-    match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*)$" },
+    match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*|snipping-tool)$" },
 
     opacity = "0.7 0.7 0.7",
 })
@@ -438,14 +438,35 @@ hl.layer_rule({
 
 local clickSound        = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/click.mp3"
 local clickReverseSound = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/click-reverse.mp3"
-hl.on("window.open", function()
-    hl.exec_cmd(clickSound)
-end)
-hl.on("window.close", function()
-    hl.exec_cmd(clickReverseSound)
-end)
-hl.on("window.fullscreen", function(window)
-    if window and window.fullscreen > 0 then
+local function isSnipOverlay(window)
+    return window and window.title == "Snipping overlay"
+end
+hl.on("window.open", function(window)
+    if not isSnipOverlay(window) then
         hl.exec_cmd(clickSound)
     end
 end)
+hl.on("window.close", function(window)
+    if not isSnipOverlay(window) then
+        hl.exec_cmd(clickReverseSound)
+    end
+end)
+hl.on("window.fullscreen", function(window)
+    if window and window.fullscreen > 0 and not isSnipOverlay(window) then
+        hl.exec_cmd(clickSound)
+    end
+end)
+
+hl.window_rule({
+    name  = "snip-editor",
+    match = { class = "^snipping-tool$", title = "^Snip & Sketch$" },
+
+    float = true,
+})
+
+hl.window_rule({
+    name  = "snip-overlay",
+    match = { class = "^snipping-tool$", title = "^Snipping overlay$" },
+
+    no_anim = true,
+})

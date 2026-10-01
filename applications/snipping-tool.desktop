@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Snipping Tool
+GenericName=Snip & Sketch
+Comment=Snip part of the screen, draw on it and copy it
+Exec=sh -c "\\$HOME/.config/hypr/snipping-tool/snipping_tool.py"
+Icon=spectacle
+StartupWMClass=snipping-tool
+Categories=Utility;
+Keywords=screenshot;snip;sketch;capture;
