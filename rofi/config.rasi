@@ -9,12 +9,38 @@ configuration {
 }
 
 * {
-    bg:               rgba(43, 58, 74, 0.7);
-    fg:               #e6edf3;
-    sel:              rgba(74, 99, 128, 0.8);
-    font:             "Noto Sans 10";
-    background-color: transparent;
-    text-color:       @fg;
+    bg:                          rgba(43, 58, 74, 0.7);
+    fg:                          #e6edf3;
+    sel:                         rgba(74, 99, 128, 0.8);
+    font:                        "Noto Sans 10";
+    background-color:            transparent;
+    text-color:                  @fg;
+    border-color:                transparent;
+    separatorcolor:              transparent;
+    background:                  transparent;
+    foreground:                  @fg;
+    lightbg:                     transparent;
+    lightfg:                     @fg;
+    blue:                        #8fb8de;
+    red:                         #ff6b6b;
+    normal-background:           transparent;
+    normal-foreground:           @fg;
+    alternate-normal-background: transparent;
+    alternate-normal-foreground: @fg;
+    selected-normal-background:  @sel;
+    selected-normal-foreground:  #ffffff;
+    active-background:           transparent;
+    active-foreground:           #8fb8de;
+    alternate-active-background: transparent;
+    alternate-active-foreground: #8fb8de;
+    selected-active-background:  @sel;
+    selected-active-foreground:  #ffffff;
+    urgent-background:           transparent;
+    urgent-foreground:           #ff6b6b;
+    alternate-urgent-background: transparent;
+    alternate-urgent-foreground: #ff6b6b;
+    selected-urgent-background:  @sel;
+    selected-urgent-foreground:  #ffffff;
 }
 
 window {

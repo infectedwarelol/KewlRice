@@ -184,6 +184,154 @@ function ShowDesktopToggle()
 end
 hl.bind(mainMod .. " + D", ShowDesktopToggle)
 
+local overviewState = nil
+local overviewClickBind = nil
+local overviewEscapeBind = nil
+local overviewGap = 20
+
+local function overviewGeometry(address)
+    for _, w in ipairs(hl.get_windows()) do
+        if w.address == address then
+            return { x = w.at.x, y = w.at.y, w = w.size.x, h = w.size.y, floating = w.floating }
+        end
+    end
+    return nil
+end
+
+local function overviewMoved(a, b)
+    if not a or not b then
+        return false
+    end
+    return math.abs(a.x - b.x) > 3 or math.abs(a.y - b.y) > 3 or math.abs(a.w - b.w) > 3 or math.abs(a.h - b.h) > 3
+end
+
+local function overviewPlace(address, g)
+    local target = "address:" .. address
+    hl.dispatch(hl.dsp.window.resize({ x = math.floor(g.w), y = math.floor(g.h), window = target }))
+    hl.dispatch(hl.dsp.window.move({ x = math.floor(g.x), y = math.floor(g.y), window = target }))
+end
+
+function OverviewSnapshot()
+    if not overviewState then
+        return
+    end
+    for _, w in ipairs(overviewState.windows) do
+        w.shown = overviewGeometry(w.address)
+    end
+end
+
+function OverviewClose(chosen)
+    if not overviewState then
+        return
+    end
+    local state = overviewState
+    overviewState = nil
+    overviewClickBind:set_enabled(false)
+    overviewEscapeBind:set_enabled(false)
+    for _, w in ipairs(state.windows) do
+        w.arranged = overviewMoved(w.shown, overviewGeometry(w.address))
+        hl.dispatch(hl.dsp.window.move({ workspace = w.workspace, window = "address:" .. w.address, follow = false }))
+    end
+    for _, w in ipairs(hl.get_windows({ workspace = "special:overview" })) do
+        hl.dispatch(hl.dsp.window.move({ workspace = state.workspace, window = "address:" .. w.address, follow = false }))
+    end
+    local special = hl.get_active_special_workspace()
+    if special and special.name == "special:overview" then
+        hl.dispatch(hl.dsp.workspace.toggle_special("overview"))
+    end
+    for _, w in ipairs(state.windows) do
+        if not w.arranged then
+            if w.floating then
+                overviewPlace(w.address, w.original)
+            else
+                local now = overviewGeometry(w.address)
+                if now and now.floating then
+                    hl.dispatch(hl.dsp.focus({ window = "address:" .. w.address }))
+                    hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
+                end
+            end
+            if w.fullscreen > 0 then
+                hl.dispatch(hl.dsp.focus({ window = "address:" .. w.address }))
+                hl.dispatch(hl.dsp.window.fullscreen({ action = "set" }))
+            end
+        end
+    end
+    local target = chosen or state.focused
+    if target then
+        hl.dispatch(hl.dsp.focus({ window = "address:" .. target }))
+    end
+end
+
+function OverviewToggle()
+    hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/overview.mp3")
+    if overviewState then
+        OverviewClose(nil)
+        return
+    end
+    local windows = {}
+    for _, w in ipairs(hl.get_windows()) do
+        if w.mapped and w.workspace then
+            table.insert(windows, {
+                address = w.address,
+                workspace = w.workspace.name,
+                fullscreen = w.fullscreen,
+                floating = w.floating,
+                original = { x = w.at.x, y = w.at.y, w = w.size.x, h = w.size.y },
+            })
+        end
+    end
+    if #windows == 0 then
+        return
+    end
+    local active = hl.get_active_window()
+    local monitor = hl.get_active_monitor()
+    overviewState = { windows = windows, focused = active and active.address, workspace = hl.get_active_workspace().name }
+
+    local reserved = monitor.reserved
+    local areaX = monitor.x + reserved.left + overviewGap
+    local areaY = monitor.y + reserved.top + overviewGap
+    local areaW = monitor.width / monitor.scale - reserved.left - reserved.right - 2 * overviewGap
+    local areaH = monitor.height / monitor.scale - reserved.top - reserved.bottom - 2 * overviewGap
+    local columns = math.ceil(math.sqrt(#windows))
+    local rows = math.ceil(#windows / columns)
+    local cellW = (areaW - (columns - 1) * overviewGap) / columns
+    local cellH = (areaH - (rows - 1) * overviewGap) / rows
+
+    for i, w in ipairs(windows) do
+        local target = "address:" .. w.address
+        if w.fullscreen > 0 then
+            hl.dispatch(hl.dsp.focus({ window = target }))
+            hl.dispatch(hl.dsp.window.fullscreen({ action = "unset" }))
+        end
+        hl.dispatch(hl.dsp.window.move({ workspace = "special:overview", window = target, follow = false }))
+        hl.dispatch(hl.dsp.window.float({ action = "set", window = target }))
+        local column = (i - 1) % columns
+        local row = math.floor((i - 1) / columns)
+        overviewPlace(w.address, {
+            x = areaX + column * (cellW + overviewGap),
+            y = areaY + row * (cellH + overviewGap),
+            w = cellW,
+            h = cellH,
+        })
+    end
+    hl.dispatch(hl.dsp.workspace.toggle_special("overview"))
+    hl.exec_cmd("sleep 0.4; hyprctl dispatch OverviewSnapshot")
+    overviewClickBind:set_enabled(true)
+    overviewEscapeBind:set_enabled(true)
+end
+
+function OverviewPick()
+    local picked = hl.get_active_window()
+    OverviewClose(picked and picked.address)
+end
+
+hl.bind(mainMod .. " + A", OverviewToggle)
+hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/snap-layouts/snap_layouts.py"))
+overviewClickBind = hl.bind("mouse:272", OverviewPick)
+overviewEscapeBind = hl.bind("Escape", function() OverviewClose(nil) end)
+overviewClickBind:set_enabled(false)
+overviewEscapeBind:set_enabled(false)
+
 hl.bind("ALT + Tab", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/window-switcher/window_switcher.py $(date +%s.%N)"), { non_consuming = true, dont_inhibit = true })
 hl.on("input.keyboard.key", function(keycode, _, state)
     if keycode == 64 and state == 0 then

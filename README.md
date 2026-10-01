@@ -46,6 +46,7 @@ cp mako/* ~/.config/mako/
 cp konsole/Transparent.colorscheme konsole/Transparent.profile ~/.local/share/konsole/
 cp konsole/konsolerc dolphin/dolphinrc ~/.config/
 chmod +x ~/.config/hypr/window-switcher/window_switcher.py
+chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 ```
 
 4. Log out and log back in. That's it.
@@ -72,6 +73,8 @@ sudo localectl set-x11-keymap fr
 | Super + F or F11 | Fullscreen on and off |
 | Alt + Tab | Switch apps, hold Alt and tap Tab to pick one |
 | Super + D | Show the desktop, press again to get your windows back |
+| Super + A | Show all your open apps at once, click one to jump to it |
+| Super + Z | Snap layouts, pick a layout and which app goes where |
 | Super + N | Hide the window |
 | Super + Shift + N | Show the hidden windows |
 | Super + V | Make the window float |
@@ -80,6 +83,8 @@ sudo localectl set-x11-keymap fr
 | Super + M | Log out of Hyprland |
 
 Click the volume in the bar to change the volume of each app on its own.
+
+In the Super + A view you can hold Super and drag an app with the left mouse button to move it, or with the right button to resize it. When you close the view, the apps you moved stay where you put them.
 
 ## Changing things
 
