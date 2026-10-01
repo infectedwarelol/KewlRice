@@ -211,7 +211,95 @@ local function overviewPlace(address, g)
     hl.dispatch(hl.dsp.window.move({ x = math.floor(g.x), y = math.floor(g.y), window = target }))
 end
 
-function OverviewSnapshot()
+local function overviewSpread(total, sizes, gap)
+    local used = 0
+    for _, size in ipairs(sizes) do
+        used = used + size
+    end
+    local spacing = gap
+    if #sizes > 1 then
+        spacing = math.min(gap, (total - used) / (#sizes - 1))
+    end
+    local start = math.max(0, (total - used - spacing * (#sizes - 1)) / 2)
+    return start, spacing
+end
+
+local function overviewPack(windows, area, scale)
+    local rowList, heights, width = {}, {}, 0
+    for _, w in ipairs(windows) do
+        local size = w.fixed and w.actual or { w = math.floor(w.actual.w * scale), h = math.floor(w.actual.h * scale) }
+        w.target = size
+        local row = rowList[#rowList]
+        if not row or width + overviewGap + size.w > area.w then
+            row = {}
+            table.insert(rowList, row)
+            table.insert(heights, 0)
+            width = -overviewGap
+        end
+        table.insert(row, w)
+        width = width + overviewGap + size.w
+        heights[#heights] = math.max(heights[#heights], size.h)
+    end
+    local total = (#heights - 1) * overviewGap
+    for _, height in ipairs(heights) do
+        total = total + height
+    end
+    return rowList, heights, total <= area.h
+end
+
+function OverviewArrange()
+    local state = overviewState
+    if not state then
+        return
+    end
+    local area = state.area
+    local placed = {}
+    for i, w in ipairs(state.windows) do
+        local g = overviewGeometry(w.address)
+        if g then
+            w.actual = g
+            w.order = i
+            w.fixed = w.requested and (g.w > w.requested.w + 3 or g.h > w.requested.h + 3)
+            table.insert(placed, w)
+        end
+    end
+    table.sort(placed, function(a, b)
+        if a.actual.h ~= b.actual.h then
+            return a.actual.h > b.actual.h
+        end
+        return a.order < b.order
+    end)
+    local rowList, heights, fits
+    local scale = 1.0
+    while true do
+        rowList, heights, fits = overviewPack(placed, area, scale)
+        if fits or scale <= 0.3 then
+            break
+        end
+        scale = scale - 0.05
+    end
+    for _, row in ipairs(rowList) do
+        table.sort(row, function(a, b) return a.order < b.order end)
+    end
+    local top, rowGap = overviewSpread(area.h, heights, overviewGap)
+    local y = area.y + top
+    for i, row in ipairs(rowList) do
+        local widths = {}
+        for _, w in ipairs(row) do
+            table.insert(widths, w.target.w)
+        end
+        local left, columnGap = overviewSpread(area.w, widths, overviewGap)
+        local x = area.x + left
+        for _, w in ipairs(row) do
+            overviewPlace(w.address, { x = x, y = y + (heights[i] - w.target.h) / 2, w = w.target.w, h = w.target.h })
+            x = x + w.target.w + columnGap
+        end
+        y = y + heights[i] + rowGap
+    end
+    hl.exec_cmd("sleep 0.25; hyprctl dispatch OverviewRecord")
+end
+
+function OverviewRecord()
     if not overviewState then
         return
     end
@@ -292,10 +380,20 @@ function OverviewToggle()
     local areaY = monitor.y + reserved.top + overviewGap
     local areaW = monitor.width / monitor.scale - reserved.left - reserved.right - 2 * overviewGap
     local areaH = monitor.height / monitor.scale - reserved.top - reserved.bottom - 2 * overviewGap
-    local columns = math.ceil(math.sqrt(#windows))
-    local rows = math.ceil(#windows / columns)
+    local columns, rows, best = 1, #windows, -1
+    for c = 1, #windows do
+        local r = math.ceil(#windows / c)
+        local w = (areaW - (c - 1) * overviewGap) / c
+        local h = (areaH - (r - 1) * overviewGap) / r
+        local tile = math.min(w, h * 1.6)
+        if tile > best then
+            columns, rows, best = c, r, tile
+        end
+    end
     local cellW = (areaW - (columns - 1) * overviewGap) / columns
     local cellH = (areaH - (rows - 1) * overviewGap) / rows
+    overviewState.area = { x = areaX, y = areaY, w = areaW, h = areaH }
+    overviewState.rows = rows
 
     for i, w in ipairs(windows) do
         local target = "address:" .. w.address
@@ -307,15 +405,23 @@ function OverviewToggle()
         hl.dispatch(hl.dsp.window.float({ action = "set", window = target }))
         local column = (i - 1) % columns
         local row = math.floor((i - 1) / columns)
+        w.row = row + 1
+        local ratio = math.max(0.75, math.min(1.9, w.original.w / math.max(1, w.original.h)))
+        local tileW, tileH = cellW * 0.94, cellW * 0.94 / ratio
+        if tileH > cellH * 0.94 then
+            tileH = cellH * 0.94
+            tileW = tileH * ratio
+        end
+        w.requested = { w = math.floor(tileW), h = math.floor(tileH) }
         overviewPlace(w.address, {
-            x = areaX + column * (cellW + overviewGap),
-            y = areaY + row * (cellH + overviewGap),
-            w = cellW,
-            h = cellH,
+            x = areaX + column * (cellW + overviewGap) + (cellW - tileW) / 2,
+            y = areaY + row * (cellH + overviewGap) + (cellH - tileH) / 2,
+            w = tileW,
+            h = tileH,
         })
     end
     hl.dispatch(hl.dsp.workspace.toggle_special("overview"))
-    hl.exec_cmd("sleep 0.4; hyprctl dispatch OverviewSnapshot")
+    hl.exec_cmd("sleep 0.25; hyprctl dispatch OverviewArrange")
     overviewClickBind:set_enabled(true)
     overviewEscapeBind:set_enabled(true)
 end
