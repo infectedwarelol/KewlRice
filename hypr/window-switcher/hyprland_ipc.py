@@ -3,6 +3,7 @@ import os
 import subprocess
 
 CLICK_SOUND = os.path.expanduser("~/.config/hypr/sounds/click.mp3")
+WINDOWED_APPS = {"brave-browser", "firefox", "chromium", "google-chrome"}
 
 
 def hyprctl(*args):
@@ -36,7 +37,7 @@ def switch_to_window(window):
     hyprctl("dispatch", f'hl.dsp.focus({{ window = "{target}" }})')
     if active_window_address() != window["address"]:
         return
-    if window["fullscreen"]:
+    if window["fullscreen"] or window["class"].lower() in WINDOWED_APPS:
         subprocess.Popen(["pw-play", CLICK_SOUND])
     else:
         hyprctl("dispatch", 'hl.dsp.window.fullscreen({ action = "set" })')

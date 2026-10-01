@@ -45,6 +45,7 @@ entry {
 }
 
 listview {
+    border:       0;
     margin:       0 6px 6px 6px;
     fixed-height: false;
     scrollbar:    false;
