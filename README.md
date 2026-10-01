@@ -4,7 +4,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 
 ## What you get
 
-- Waybar at the top, see-through and blurred
+- Waybar at the top, fully transparent so your wallpaper shows through
 - Every app see-through at 70%, and new apps you install get it too
 - Kitty and Konsole with a dark blue gray background and clear text
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
@@ -20,7 +20,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg
 ```
 
 ## Install
@@ -52,7 +52,14 @@ chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 ```
 
-4. Log out and log back in. That's it.
+4. Pick a wallpaper. Save any image you like as `~/.config/hypr/wallpapers/spirited-away-chihiro.png`, or change that path in `hyprland.lua` to point at your own image:
+
+```bash
+mkdir -p ~/.config/hypr/wallpapers
+cp /path/to/your/image.png ~/.config/hypr/wallpapers/spirited-away-chihiro.png
+```
+
+5. Log out and log back in. That's it.
 
 ## Keyboard layout
 

@@ -12,6 +12,7 @@ local menu = "wofi --show drun"
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
     hl.exec_cmd("mako")
+    hl.exec_cmd("swaybg -i " .. os.getenv("HOME") .. "/.config/hypr/wallpapers/spirited-away-chihiro.png -m fill")
 end)
 
 hl.env("XCURSOR_SIZE", "24")
@@ -109,8 +110,8 @@ hl.config({
 
 hl.config({
     misc = {
-        force_default_wallpaper = -1,
-        disable_hyprland_logo   = false,
+        force_default_wallpaper = 0,
+        disable_hyprland_logo   = true,
     },
 })
 
