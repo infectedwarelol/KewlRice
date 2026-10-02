@@ -11,6 +11,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 - A click sound when an app opens or goes fullscreen, and the same click reversed when it closes
 - Notifications that go away after 5 seconds
 - System apps like Settings and the volume mixer dark and see-through too
+- Brave turns solid on YouTube and whenever a video is playing, so videos look sharp
 - A snipping tool like on Windows, with drawing, blur and crop
 - fastfetch with a spinning Arch logo every time you open a terminal or run it
 - French keyboard layout (easy to change, see below)
@@ -22,7 +23,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo plasma-integration btop cmatrix fastfetch
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo plasma-integration btop cmatrix fastfetch playerctl
 ```
 
 ## Install
@@ -56,6 +57,7 @@ chmod +x ~/.config/hypr/window-switcher/window_switcher.py
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 chmod +x ~/.config/fastfetch/spinning_logo.py
+chmod +x ~/.config/hypr/brave-video/brave_video.py
 ```
 
 4. Make KDE and Qt apps dark so they match the rest:
