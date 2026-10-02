@@ -1,8 +1,8 @@
 hl.monitor({
-    output   = "",
-    mode     = "preferred",
+    output   = "DP-1",
+    mode     = "1920x1080@180",
     position = "auto",
-    scale    = "auto",
+    scale    = 1,
 })
 
 local terminal    = "kitty"
@@ -12,11 +12,13 @@ local menu = "wofi --show drun"
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
     hl.exec_cmd("mako")
+    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
     hl.exec_cmd("swaybg -i " .. os.getenv("HOME") .. "/.config/hypr/wallpapers/spirited-away-chihiro.png -m fill")
 end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+hl.env("QT_QPA_PLATFORMTHEME", "kde")
 
 hl.config({
     general = {
@@ -112,6 +114,7 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo   = true,
+        vrr                     = 1,  -- adaptive sync always on (DP-1: 48-180 Hz)
     },
 })
 

@@ -10,6 +10,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
 - A click sound when an app opens or goes fullscreen, and the same click reversed when it closes
 - Notifications that go away after 5 seconds
+- System apps like Settings and the volume mixer dark and see-through too
 - A snipping tool like on Windows, with drawing, blur and crop
 - French keyboard layout (easy to change, see below)
 
@@ -20,7 +21,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg plasma-integration
 ```
 
 ## Install
@@ -59,7 +60,13 @@ mkdir -p ~/.config/hypr/wallpapers
 cp /path/to/your/image.png ~/.config/hypr/wallpapers/spirited-away-chihiro.png
 ```
 
-5. Log out and log back in. That's it.
+5. Make KDE and Qt apps dark so they match the rest:
+
+```bash
+plasma-apply-colorscheme BreezeDark
+```
+
+6. Log out and log back in. That's it.
 
 ## Keyboard layout
 
