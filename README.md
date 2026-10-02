@@ -6,7 +6,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 
 - Waybar at the top, fully transparent so your wallpaper shows through
 - Every app see-through at 70%, and new apps you install get it too
-- Kitty and Konsole with a dark blue gray background and clear text
+- Kitty and Konsole with a dark blue gray background and clear text, and btop and cmatrix see-through in kitty too
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
 - A click sound when an app opens or goes fullscreen, and the same click reversed when it closes
 - Notifications that go away after 5 seconds
@@ -21,7 +21,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg plasma-integration
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg plasma-integration btop cmatrix
 ```
 
 ## Install
@@ -38,13 +38,14 @@ cd MyRice
 3. Copy everything into place:
 
 ```bash
-mkdir -p ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole ~/.local/share/applications
+mkdir -p ~/.config/btop ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole ~/.local/share/applications
 cp -r hypr/* ~/.config/hypr/
 cp waybar/* ~/.config/waybar/
 cp wofi/* ~/.config/wofi/
 cp rofi/* ~/.config/rofi/
 cp kitty/* ~/.config/kitty/
 cp mako/* ~/.config/mako/
+cp btop/* ~/.config/btop/
 cp konsole/Transparent.colorscheme konsole/Transparent.profile ~/.local/share/konsole/
 cp konsole/konsolerc dolphin/dolphinrc ~/.config/
 cp applications/snipping-tool.desktop ~/.local/share/applications/

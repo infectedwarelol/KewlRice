@@ -6,6 +6,8 @@ configuration {
     kb-row-up:       "Alt+ISO_Left_Tab,Up";
     kb-accept-entry: "Return,KP_Enter";
     kb-cancel:       "Escape";
+    me-select-entry: "";
+    me-accept-entry: "MousePrimary";
 }
 
 * {
