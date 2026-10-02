@@ -443,6 +443,7 @@ overviewClickBind:set_enabled(false)
 overviewEscapeBind:set_enabled(false)
 
 hl.config({ binds = { disable_keybind_grabbing = true } })
+hl.config({ decoration = { dim_special = 0 } })
 hl.bind("ALT + Tab", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/window-switcher/window_switcher.py $(date +%s.%N)"), { non_consuming = true, dont_inhibit = true })
 hl.on("input.keyboard.key", function(keycode, _, state)
     if keycode == 64 and state == 0 then
