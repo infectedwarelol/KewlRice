@@ -4,7 +4,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 
 ## What you get
 
-- Waybar at the top, fully transparent so your wallpaper shows through
+- Waybar at the top, fully transparent
 - Every app see-through at 80%, and new apps you install get it too
 - Kitty and Konsole with a dark blue gray background and clear text, and btop and cmatrix see-through in kitty too
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
@@ -22,7 +22,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg plasma-integration btop cmatrix fastfetch
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo plasma-integration btop cmatrix fastfetch
 ```
 
 ## Install
@@ -58,20 +58,13 @@ chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 chmod +x ~/.config/fastfetch/spinning_logo.py
 ```
 
-4. Pick a wallpaper. Save any image you like as `~/.config/hypr/wallpapers/spirited-away-chihiro.png`, or change that path in `hyprland.lua` to point at your own image:
-
-```bash
-mkdir -p ~/.config/hypr/wallpapers
-cp /path/to/your/image.png ~/.config/hypr/wallpapers/spirited-away-chihiro.png
-```
-
-5. Make KDE and Qt apps dark so they match the rest:
+4. Make KDE and Qt apps dark so they match the rest:
 
 ```bash
 plasma-apply-colorscheme BreezeDark
 ```
 
-6. Log out and log back in. That's it.
+5. Log out and log back in. That's it.
 
 ## Keyboard layout
 
