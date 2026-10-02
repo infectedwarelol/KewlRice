@@ -1,6 +1,6 @@
 [General]
 Description=Transparent
-Opacity=0.7
+Opacity=0.8
 Blur=true
 
 [Background]

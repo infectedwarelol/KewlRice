@@ -55,7 +55,7 @@ hl.config({
 
         blur = {
             enabled   = true,
-            size      = 1,
+            size      = 3,
             passes    = 3,
             vibrancy  = 0.1696,
         },
@@ -519,7 +519,7 @@ hl.window_rule({
     name  = "transparent-apps",
     match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*|snipping-tool)$" },
 
-    opacity = "0.7 0.7 0.7",
+    opacity = "0.8 0.8 0.8",
 })
 
 hl.layer_rule({

@@ -5,7 +5,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 ## What you get
 
 - Waybar at the top, fully transparent so your wallpaper shows through
-- Every app see-through at 70%, and new apps you install get it too
+- Every app see-through at 80%, and new apps you install get it too
 - Kitty and Konsole with a dark blue gray background and clear text, and btop and cmatrix see-through in kitty too
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
 - A click sound when an app opens or goes fullscreen, and the same click reversed when it closes
@@ -113,7 +113,7 @@ In the Super + A view you can hold Super and drag an app with the left mouse but
 
 ## Changing things
 
-- How see-through apps are: look for `opacity = "0.7 0.7 0.7"` in `hyprland.lua`. Lower is more see-through.
+- How see-through apps are: look for `opacity = "0.8 0.8 0.8"` in `hyprland.lua`. Lower is more see-through.
 - How strong the blur is: change `size` in the `blur` part of `hyprland.lua`.
 - The click sound: swap `~/.config/hypr/sounds/click.mp3` and `click-reverse.mp3` for your own sounds with the same names.
 - Kitty and Konsole stay out of the see-through rule because they already make only their background see-through, so the text stays sharp.
