@@ -1,0 +1,19 @@
+[[ $- != *i* ]] && return
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+PS1='[\u@\h \W]\$ '
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+fastfetch() {
+    if [ $# -eq 0 ] && [ -t 1 ]; then
+        python3 "$HOME/.config/fastfetch/spinning_logo.py" "$(command fastfetch --pipe false --logo none)" 2>/dev/null || command fastfetch
+    else
+        command fastfetch "$@"
+    fi
+}
+
+if [ -z "$FASTFETCH_SHOWN" ]; then
+    export FASTFETCH_SHOWN=1
+    fastfetch
+fi

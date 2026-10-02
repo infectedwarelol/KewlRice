@@ -12,6 +12,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 - Notifications that go away after 5 seconds
 - System apps like Settings and the volume mixer dark and see-through too
 - A snipping tool like on Windows, with drawing, blur and crop
+- fastfetch with a spinning Arch logo every time you open a terminal or run it
 - French keyboard layout (easy to change, see below)
 
 ## What you need
@@ -21,7 +22,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg plasma-integration btop cmatrix
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo swaybg plasma-integration btop cmatrix fastfetch
 ```
 
 ## Install
@@ -33,12 +34,12 @@ git clone https://github.com/infectedware/MyRice.git
 cd MyRice
 ```
 
-2. Back up your old configs if you have any you care about. The next step replaces them.
+2. Back up your old configs if you have any you care about, including your `~/.bashrc`. The next step replaces them.
 
 3. Copy everything into place:
 
 ```bash
-mkdir -p ~/.config/btop ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole ~/.local/share/applications
+mkdir -p ~/.config/fastfetch ~/.config/btop ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole ~/.local/share/applications
 cp -r hypr/* ~/.config/hypr/
 cp waybar/* ~/.config/waybar/
 cp wofi/* ~/.config/wofi/
@@ -46,12 +47,15 @@ cp rofi/* ~/.config/rofi/
 cp kitty/* ~/.config/kitty/
 cp mako/* ~/.config/mako/
 cp btop/* ~/.config/btop/
+cp fastfetch/* ~/.config/fastfetch/
+cp bash/bashrc ~/.bashrc
 cp konsole/Transparent.colorscheme konsole/Transparent.profile ~/.local/share/konsole/
 cp konsole/konsolerc dolphin/dolphinrc ~/.config/
 cp applications/snipping-tool.desktop ~/.local/share/applications/
 chmod +x ~/.config/hypr/window-switcher/window_switcher.py
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
+chmod +x ~/.config/fastfetch/spinning_logo.py
 ```
 
 4. Pick a wallpaper. Save any image you like as `~/.config/hypr/wallpapers/spirited-away-chihiro.png`, or change that path in `hyprland.lua` to point at your own image:
