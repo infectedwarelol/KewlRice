@@ -551,8 +551,18 @@ local clickReverseSound = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/soun
 local function isSnipOverlay(window)
     return window and window.title == "Snipping overlay"
 end
+local function quietSnipEditor(window)
+    if not window or window.class ~= "snipping-tool" then
+        return false
+    end
+    local marker = os.getenv("XDG_RUNTIME_DIR") .. "/snipping-tool-quiet-open"
+    if os.remove(marker) then
+        return true
+    end
+    return false
+end
 hl.on("window.open", function(window)
-    if not isSnipOverlay(window) then
+    if not isSnipOverlay(window) and not quietSnipEditor(window) then
         hl.exec_cmd(clickSound)
     end
 end)

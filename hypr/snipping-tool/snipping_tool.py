@@ -19,6 +19,7 @@ from snip_editor import SnipEditor
 from snip_overlay import SnipOverlay
 
 LOCK_FILE = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "snipping-tool-snip.lock")
+QUIET_OPEN_FILE = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "snipping-tool-quiet-open")
 
 
 def load_theme():
@@ -30,6 +31,10 @@ def load_theme():
     Gtk.StyleContext.add_provider_for_screen(
         Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
     )
+
+
+def skip_next_open_sound():
+    open(QUIET_OPEN_FILE, "w").close()
 
 
 def take_snip(on_result, delay=0.0):
@@ -61,6 +66,7 @@ class SnipApp:
     def snip_done(self, pixbuf):
         if pixbuf:
             self.editor.load(pixbuf)
+        skip_next_open_sound()
         self.editor.show()
         self.editor.present()
 
@@ -84,6 +90,7 @@ def quick_snip():
         return
     lock.close()
     app = SnipApp()
+    skip_next_open_sound()
     app.open_editor(pixbuf)
     Gtk.main()
 
