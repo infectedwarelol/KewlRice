@@ -2,7 +2,14 @@
 
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
-PS1='[\u@\h \W]\$ '
+_pill_left=$'\ue0b6'
+_pill_right=$'\ue0b4'
+_arrow=$'\ue0b0'
+_arch_logo=$'\uf303'
+_clock=$'\uf017'
+_blue='23;147;209'
+_white='230;237;243'
+PS1="\[\e[0;38;2;${_blue}m\]${_pill_left}\[\e[1;38;2;255;255;255;48;2;${_blue}m\] ${_arch_logo} \u \[\e[22;38;2;${_blue};48;2;${_white}m\]${_arrow}\[\e[1;38;2;${_blue};48;2;${_white}m\] \w \[\e[22;38;2;${_white};48;2;${_blue}m\]${_arrow}\[\e[0;38;2;255;255;255;48;2;${_blue}m\] ${_clock} \A \[\e[0;38;2;${_blue}m\]${_pill_right}\[\e[0m\] "
 export PATH="$HOME/.npm-global/bin:$PATH"
 
 fastfetch() {

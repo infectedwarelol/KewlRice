@@ -14,6 +14,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 - Brave turns solid on YouTube and whenever a video is playing, so videos look sharp
 - A snipping tool like on Windows, with drawing, blur and crop
 - fastfetch with a spinning Arch logo every time you open a terminal or run it
+- An Arch blue terminal prompt with your name, the folder you are in and the time
 - French keyboard layout (easy to change, see below)
 
 ## What you need
@@ -23,7 +24,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo plasma-integration btop cmatrix fastfetch playerctl
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo plasma-integration btop cmatrix fastfetch playerctl ttf-jetbrains-mono-nerd
 ```
 
 ## Install
