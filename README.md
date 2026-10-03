@@ -1,4 +1,4 @@
-# MyRice
+# KewlRice
 
 My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the colors are a dark blue gray, and there's a little click sound when apps open and close. Alt+Tab works like on Windows 10.
 
