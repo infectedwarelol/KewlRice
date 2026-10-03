@@ -13,6 +13,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 - Notifications that go away after 5 seconds
 - System apps like Settings and the volume mixer dark and see-through too
 - Brave turns solid on YouTube and whenever a video is playing, so videos look sharp
+- Steam and Steam games stay solid, so games look the way they should
 - A snipping tool like on Windows, with drawing, blur and crop
 - fastfetch with a spinning Arch logo and a spin sound every time you open a terminal or run it
 - An Arch blue terminal prompt with your name, the folder you are in and the time
@@ -90,7 +91,7 @@ sudo localectl set-x11-keymap fr
 | Super + E | Open the file manager |
 | Super + C or Alt + F4 | Close the window |
 | Super + F or F11 | Fullscreen on and off |
-| Alt + Tab | Switch apps, hold Alt and tap Tab to pick one, works in fullscreen games too |
+| Alt + Tab | Switch apps, hold Alt and tap Tab to pick one or click it with the mouse, works in fullscreen games too |
 | Super + D | Show the desktop, press again to get your windows back |
 | Super + A | Show all your open apps at once, click one to jump to it, works in fullscreen games too |
 | Super + Z | Snap layouts, pick a layout and which app goes where |
@@ -116,4 +117,5 @@ In the Super + A view you can hold Super and drag an app with the left mouse but
 - The login and terminal sounds: swap `~/.config/hypr/sounds/login.mp3` and `terminal1.mp3`.
 - The typing sounds: swap `~/.config/hypr/sounds/keys/terminal-key.wav` and `terminal-backspace.wav`.
 - The spin sound: swap `~/.config/fastfetch/spin.wav`.
+- Apps that stay solid: add their class to the `negative:` list next to the `opacity` rule in `hyprland.lua`. Run `hyprctl clients` to find an app's class.
 - Kitty and Konsole stay out of the see-through rule because they already make only their background see-through, so the text stays sharp.
