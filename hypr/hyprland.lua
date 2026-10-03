@@ -446,7 +446,14 @@ overviewEscapeBind:set_enabled(false)
 hl.config({ binds = { disable_keybind_grabbing = true } })
 hl.config({ decoration = { dim_special = 0 } })
 hl.bind("ALT + Tab", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/window-switcher/window_switcher.py $(date +%s.%N)"), { non_consuming = true, dont_inhibit = true })
+local terminalKeySound = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/keys/terminal-key.wav"
 hl.on("input.keyboard.key", function(keycode, _, state)
+    if state == 1 then
+        local active = hl.get_active_window()
+        if active and active.class == "kitty" then
+            hl.exec_cmd(terminalKeySound)
+        end
+    end
     if keycode == 64 and state == 0 then
         local released = io.open(os.getenv("XDG_RUNTIME_DIR") .. "/alttab-released", "w")
         if released then
