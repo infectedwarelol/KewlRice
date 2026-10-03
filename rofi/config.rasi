@@ -7,7 +7,7 @@ configuration {
     kb-accept-entry: "Return,KP_Enter";
     kb-cancel:       "Escape";
     me-select-entry: "";
-    me-accept-entry: "MousePrimary";
+    me-accept-entry: "MousePrimary,Alt+MousePrimary";
 }
 
 * {
