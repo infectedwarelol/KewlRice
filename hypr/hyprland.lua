@@ -565,6 +565,9 @@ local function quietSnipEditor(window)
     return false
 end
 hl.on("window.open", function(window)
+    if window and window.class == "kitty" then
+        return
+    end
     if not isSnipOverlay(window) and not quietSnipEditor(window) then
         hl.exec_cmd(clickSound)
     end

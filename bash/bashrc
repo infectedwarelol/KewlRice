@@ -22,5 +22,6 @@ fastfetch() {
 
 if [ -z "$FASTFETCH_SHOWN" ]; then
     export FASTFETCH_SHOWN=1
+    pw-play ~/.config/hypr/sounds/terminal1.mp3 2>/dev/null
     fastfetch
 fi
