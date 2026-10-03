@@ -17,6 +17,7 @@ TURNS = 2
 DURATION = 2.5
 MIN_INFO_WIDTH = 20
 FPS = 40
+SPIN_SOUND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spin.wav")
 
 
 def fastfetch(*args):
@@ -98,6 +99,9 @@ def main():
 
     sys.stdout.write("\x1b[?25l")
     first = True
+    sound = None
+    if os.path.exists(SPIN_SOUND):
+        sound = subprocess.Popen(["pw-play", SPIN_SOUND], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         start = time.monotonic()
         while True:
@@ -114,6 +118,8 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        if sound and sound.poll() is None:
+            sound.terminate()
         columns, _ = terminal_size()
         room = columns - width - GAP - 1
         beside = room >= MIN_INFO_WIDTH
