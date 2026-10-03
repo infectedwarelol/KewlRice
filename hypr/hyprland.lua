@@ -436,7 +436,7 @@ function OverviewPick()
     OverviewClose(picked and picked.address)
 end
 
-hl.bind(mainMod .. " + A", OverviewToggle)
+hl.bind(mainMod .. " + A", OverviewToggle, { dont_inhibit = true })
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/snap-layouts/snap_layouts.py"))
 overviewClickBind = hl.bind("mouse:272", OverviewPick)
 overviewEscapeBind = hl.bind("Escape", function() OverviewClose(nil) end)
