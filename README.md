@@ -4,7 +4,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 
 ## What you get
 
-- Waybar at the top, fully transparent
+- Waybar at the top, fully transparent, with the clock on the left (click it to see the date, hover for a calendar)
 - Every app see-through at 80%, and new apps you install get it too
 - Kitty and Konsole with a dark blue gray background and clear text, and btop and cmatrix see-through in kitty too
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
