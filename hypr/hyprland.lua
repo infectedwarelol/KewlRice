@@ -575,6 +575,7 @@ local function quietSnipEditor(window)
 end
 hl.on("window.open", function(window)
     if window and window.class == "kitty" then
+        hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/terminal1.mp3")
         return
     end
     if not isSnipOverlay(window) and not quietSnipEditor(window) then
