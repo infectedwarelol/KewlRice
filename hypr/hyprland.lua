@@ -587,7 +587,7 @@ hl.on("window.close", function(window)
     end
 end)
 hl.on("window.fullscreen", function(window)
-    if window and window.fullscreen > 0 and not isSnipOverlay(window) then
+    if window and window.fullscreen > 0 and window.class ~= "kitty" and not isSnipOverlay(window) then
         hl.exec_cmd(clickSound)
     end
 end)
