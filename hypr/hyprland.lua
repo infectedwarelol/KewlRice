@@ -187,7 +187,7 @@ function ShowDesktopToggle()
         end
     end
 end
-hl.bind(mainMod .. " + D", ShowDesktopToggle)
+hl.bind(mainMod .. " + D", ShowDesktopToggle, { dont_inhibit = true })
 
 local overviewState = nil
 local overviewClickBind = nil
