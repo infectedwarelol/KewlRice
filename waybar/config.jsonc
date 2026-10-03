@@ -2,7 +2,7 @@
     "height": 30,
     "spacing": 4,
     "modules-left": [
-        "hyprland/workspaces"
+        "clock"
     ],
     "modules-center": [
         "hyprland/window"
@@ -13,12 +13,8 @@
         "cpu",
         "memory",
         "temperature",
-        "clock",
         "tray"
     ],
-    "hyprland/workspaces": {
-        "on-click": "activate"
-    },
     "hyprland/window": {
         "max-length": 60,
         "separate-outputs": true
