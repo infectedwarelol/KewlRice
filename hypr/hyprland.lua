@@ -528,7 +528,7 @@ hl.window_rule({
 
 hl.window_rule({
     name  = "transparent-apps",
-    match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*|snipping-tool)$" },
+    match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*|snipping-tool|steam|steam_app_.*|steamwebhelper)$" },
 
     opacity = "0.8 0.8 0.8",
 })
