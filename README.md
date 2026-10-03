@@ -9,11 +9,12 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 - Kitty and Konsole with a dark blue gray background and clear text, and btop and cmatrix see-through in kitty too
 - A launcher on Super+R and a Windows style Alt+Tab menu that look the same
 - A click sound when an app opens or goes fullscreen, and the same click reversed when it closes
+- A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace)
 - Notifications that go away after 5 seconds
 - System apps like Settings and the volume mixer dark and see-through too
 - Brave turns solid on YouTube and whenever a video is playing, so videos look sharp
 - A snipping tool like on Windows, with drawing, blur and crop
-- fastfetch with a spinning Arch logo every time you open a terminal or run it
+- fastfetch with a spinning Arch logo and a spin sound every time you open a terminal or run it
 - An Arch blue terminal prompt with your name, the folder you are in and the time
 - French keyboard layout (easy to change, see below)
 
@@ -89,9 +90,9 @@ sudo localectl set-x11-keymap fr
 | Super + E | Open the file manager |
 | Super + C or Alt + F4 | Close the window |
 | Super + F or F11 | Fullscreen on and off |
-| Alt + Tab | Switch apps, hold Alt and tap Tab to pick one |
+| Alt + Tab | Switch apps, hold Alt and tap Tab to pick one, works in fullscreen games too |
 | Super + D | Show the desktop, press again to get your windows back |
-| Super + A | Show all your open apps at once, click one to jump to it |
+| Super + A | Show all your open apps at once, click one to jump to it, works in fullscreen games too |
 | Super + Z | Snap layouts, pick a layout and which app goes where |
 | Super + Shift + S | Take a snip, then draw on it, blur it or crop it |
 | Super + N | Hide the window |
@@ -112,4 +113,7 @@ In the Super + A view you can hold Super and drag an app with the left mouse but
 - How see-through apps are: look for `opacity = "0.8 0.8 0.8"` in `hyprland.lua`. Lower is more see-through.
 - How strong the blur is: change `size` in the `blur` part of `hyprland.lua`.
 - The click sound: swap `~/.config/hypr/sounds/click.mp3` and `click-reverse.mp3` for your own sounds with the same names.
+- The login and terminal sounds: swap `~/.config/hypr/sounds/login.mp3` and `terminal1.mp3`.
+- The typing sounds: swap `~/.config/hypr/sounds/keys/terminal-key.wav` and `terminal-backspace.wav`.
+- The spin sound: swap `~/.config/fastfetch/spin.wav`.
 - Kitty and Konsole stay out of the see-through rule because they already make only their background see-through, so the text stays sharp.
