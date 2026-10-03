@@ -12,6 +12,7 @@ local menu = "wofi --show drun"
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
     hl.exec_cmd("mako")
+    hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/login.mp3")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/brave-video/brave_video.py")
     hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
 end)
