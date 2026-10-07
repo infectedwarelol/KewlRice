@@ -9,6 +9,7 @@ import sys
 import threading
 
 BRAVE_CLASS = "brave-browser"
+DISCORD_CLASS = "discord"
 VIDEO_SITES = ("YouTube",)
 SOLID = "1.0"
 SEE_THROUGH = "0.8"
@@ -21,11 +22,50 @@ def hyprctl(*args):
     return subprocess.run(["hyprctl", *args], capture_output=True, text=True).stdout
 
 
-def brave_windows():
+def watched_windows():
     try:
-        return [c for c in json.loads(hyprctl("clients", "-j")) if c["class"] == BRAVE_CLASS]
+        return [c for c in json.loads(hyprctl("clients", "-j")) if c["class"] in (BRAVE_CLASS, DISCORD_CLASS)]
     except (json.JSONDecodeError, KeyError):
         return []
+
+
+def process_name(pid):
+    try:
+        with open(f"/proc/{pid}/comm") as comm:
+            return comm.read().strip().lower()
+    except (OSError, TypeError):
+        return ""
+
+
+def discord_audio_playing():
+    try:
+        nodes = json.loads(subprocess.run(["pw-dump"], capture_output=True, text=True).stdout)
+    except json.JSONDecodeError:
+        return False
+    client_pids = {}
+    for node in nodes:
+        if node.get("type") == "PipeWire:Interface:Client":
+            props = (node.get("info") or {}).get("props") or {}
+            client_pids[node.get("id")] = props.get("application.process.id") or props.get("pipewire.sec.pid")
+    for node in nodes:
+        info = node.get("info") or {}
+        props = info.get("props") or {}
+        if props.get("media.class") != "Stream/Output/Audio" or info.get("state") != "running":
+            continue
+        pid = props.get("application.process.id") or client_pids.get(props.get("client.id"))
+        if "discord" in process_name(pid):
+            return True
+    return False
+
+
+def watch_discord(events):
+    playing = False
+    while True:
+        now = discord_audio_playing()
+        if now != playing:
+            playing = now
+            events.put(("discord", playing))
+        threading.Event().wait(1)
 
 
 def set_opacity(address, value):
@@ -75,17 +115,24 @@ def main():
     events = queue.Queue()
     threading.Thread(target=watch_player, args=(events,), daemon=True).start()
     threading.Thread(target=watch_hyprland, args=(events,), daemon=True).start()
+    threading.Thread(target=watch_discord, args=(events,), daemon=True).start()
 
     playing = False
+    discord_playing = False
     applied = {}
     events.put(("start", ""))
     while True:
         source, value = events.get()
         if source == "player":
             playing = value == "Playing"
-        windows = brave_windows()
+        if source == "discord":
+            discord_playing = value
+        windows = watched_windows()
         for window in windows:
-            solid = playing or any(site in window["title"] for site in VIDEO_SITES)
+            if window["class"] == DISCORD_CLASS:
+                solid = discord_playing
+            else:
+                solid = playing or any(site in window["title"] for site in VIDEO_SITES)
             wanted = SOLID if solid else SEE_THROUGH
             if applied.get(window["address"]) != wanted:
                 set_opacity(window["address"], wanted)
