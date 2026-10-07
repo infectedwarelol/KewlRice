@@ -34,9 +34,19 @@ sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wty
 1. Get the files:
 
 ```bash
-git clone https://github.com/infectedware/MyRice.git
-cd MyRice
+git clone https://github.com/infectedware/KewlRice.git
+cd KewlRice
 ```
+
+Or, if a friend sent you `KewlRice.zip`, save it to your Downloads folder, then unzip it and go into the folder:
+
+```bash
+cd ~/Downloads
+unzip KewlRice.zip
+cd KewlRice
+```
+
+If `unzip` is missing, install it with `sudo pacman -S unzip`. Every step below works the same from inside that folder.
 
 2. Back up your old configs if you have any you care about, including your `~/.bashrc`. The next step replaces them.
 
