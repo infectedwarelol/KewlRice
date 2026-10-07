@@ -586,8 +586,8 @@ hl.layer_rule({
     ignore_alpha = 0.2,
 })
 
-local clickSound        = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/click.mp3"
-local clickReverseSound = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/click-reverse.mp3"
+local clickSound        = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/app-open.mp3"
+local clickReverseSound = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/app-close.mp3"
 local function isSnipOverlay(window)
     return window and window.title == "Snipping overlay"
 end
