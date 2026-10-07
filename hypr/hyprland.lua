@@ -169,7 +169,12 @@ hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))
 hl.bind("F11", hl.dsp.window.fullscreen())
 
 local showDesktopState = nil
+function ShowDesktopRestoreAnimations()
+    hl.config({ animations = { enabled = true } })
+end
 function ShowDesktopToggle()
+    hl.config({ animations = { enabled = false } })
+    hl.exec_cmd("sleep 0.15; hyprctl dispatch ShowDesktopRestoreAnimations")
     local hidden = hl.get_windows({ workspace = "special:desktop" })
     if #hidden > 0 then
         local target = (showDesktopState and showDesktopState.workspace) or hl.get_active_workspace().name
