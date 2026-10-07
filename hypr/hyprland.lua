@@ -454,15 +454,35 @@ overviewEscapeBind:set_enabled(false)
 hl.config({ binds = { disable_keybind_grabbing = true } })
 hl.config({ decoration = { dim_special = 0 } })
 hl.bind("ALT + Tab", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/window-switcher/window_switcher.py $(date +%s.%N)"), { non_consuming = true, dont_inhibit = true })
-local terminalKeySound       = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/keys/terminal-key.wav"
-local terminalBackspaceSound = "pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/keys/terminal-backspace.wav"
-local backspaceKeycode       = 22
+local terminalKeySoundFile       = os.getenv("HOME") .. "/.config/hypr/sounds/keys/terminal-key.wav"
+local terminalBackspaceSoundFile = os.getenv("HOME") .. "/.config/hypr/sounds/keys/terminal-backspace.wav"
+local terminalKeyRepeat          = os.getenv("HOME") .. "/.config/hypr/terminal-key-repeat.sh"
+local backspaceKeycode           = 22
+local nonRepeatingKeycodes       = { [37] = true, [50] = true, [62] = true, [64] = true, [66] = true, [105] = true, [108] = true, [133] = true, [134] = true }
+local repeatingKeycode           = nil
+local repeatGeneration           = 0
+local function stopTerminalKeyRepeat()
+    if repeatingKeycode then
+        hl.exec_cmd(terminalKeyRepeat .. " stop " .. repeatingKeycode .. " " .. repeatGeneration)
+        repeatingKeycode = nil
+    end
+end
 hl.on("input.keyboard.key", function(keycode, _, state)
     if state == 1 then
         local active = hl.get_active_window()
         if active and active.class == "kitty" then
-            hl.exec_cmd(keycode == backspaceKeycode and terminalBackspaceSound or terminalKeySound)
+            local soundFile = keycode == backspaceKeycode and terminalBackspaceSoundFile or terminalKeySoundFile
+            if nonRepeatingKeycodes[keycode] then
+                hl.exec_cmd("pw-play " .. soundFile)
+            else
+                stopTerminalKeyRepeat()
+                repeatGeneration = repeatGeneration + 1
+                repeatingKeycode = keycode
+                hl.exec_cmd(terminalKeyRepeat .. " start " .. keycode .. " " .. repeatGeneration .. " " .. soundFile)
+            end
         end
+    elseif state == 0 and keycode == repeatingKeycode then
+        stopTerminalKeyRepeat()
     end
     if keycode == 64 and state == 0 then
         local released = io.open(os.getenv("XDG_RUNTIME_DIR") .. "/alttab-released", "w")
