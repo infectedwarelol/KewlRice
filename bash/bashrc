@@ -2,19 +2,22 @@
 
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
+alias cmatrix='cmatrix -C magenta'
+export MAVEN_OPTS="-Xmx1g"
 _pill_left=$'\ue0b6'
 _pill_right=$'\ue0b4'
 _arrow=$'\ue0b0'
 _arch_logo=$'\uf303'
 _clock=$'\uf017'
-_blue='23;147;209'
+_purple='155;89;255'
 _white='230;237;243'
-PS1="\[\e[0;38;2;${_blue}m\]${_pill_left}\[\e[1;38;2;255;255;255;48;2;${_blue}m\] ${_arch_logo} \u \[\e[22;38;2;${_blue};48;2;${_white}m\]${_arrow}\[\e[1;38;2;${_blue};48;2;${_white}m\] \w \[\e[22;38;2;${_white};48;2;${_blue}m\]${_arrow}\[\e[0;38;2;255;255;255;48;2;${_blue}m\] ${_clock} \A \[\e[0;38;2;${_blue}m\]${_pill_right}\[\e[0m\] "
+PS1="\[\e[0;38;2;${_purple}m\]${_pill_left}\[\e[1;38;2;255;255;255;48;2;${_purple}m\] ${_arch_logo} \u \[\e[22;38;2;${_purple};48;2;${_white}m\]${_arrow}\[\e[1;38;2;${_purple};48;2;${_white}m\] \w \[\e[22;38;2;${_white};48;2;${_purple}m\]${_arrow}\[\e[0;38;2;255;255;255;48;2;${_purple}m\] ${_clock} \A \[\e[0;38;2;${_purple}m\]${_pill_right}\[\e[0m\] "
 export PATH="$HOME/.npm-global/bin:$PATH"
 
 fastfetch() {
     if [ $# -eq 0 ] && [ -t 1 ]; then
         python3 "$HOME/.config/fastfetch/spinning_logo.py" "$(command fastfetch --pipe false --logo none)" 2>/dev/null || command fastfetch
+        ( pw-play "$HOME/.config/hypr/sounds/terminal-ready.mp3" >/dev/null 2>&1 & )
     else
         command fastfetch "$@"
     fi
@@ -22,6 +25,7 @@ fastfetch() {
 
 if [ -z "$FASTFETCH_SHOWN" ]; then
     export FASTFETCH_SHOWN=1
-    sleep 1.8
+    sleep 1.0
     fastfetch
 fi
+export PATH="$HOME/.local/bin:$PATH"
