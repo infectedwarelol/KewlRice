@@ -9,7 +9,7 @@ gi.require_version("Gdk", "3.0")
 gi.require_foreign("cairo")
 from gi.repository import Gdk, Gtk
 
-SHUTTER_SOUND = os.path.expanduser("~/.config/hypr/sounds/snip.mp3")
+SHUTTER_SOUND = os.path.expanduser("~/.config/hypr/sounds/screenshot.mp3")
 
 MODES = [
     ("rectangle", "Rectangular snip", "draw-rectangle"),
