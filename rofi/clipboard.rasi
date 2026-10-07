@@ -1,0 +1,71 @@
+@import "config.rasi"
+
+window {
+    width:            460px;
+    height:           600px;
+    padding:          10px;
+    border-radius:    12px;
+}
+
+mainbox {
+    children: [ textbox-title, inputbar, message, listview ];
+    spacing:  8px;
+}
+
+textbox-title {
+    content:          "Clipboard";
+    expand:           false;
+    margin:           4px 6px 0 6px;
+    font:             "Noto Sans Bold 13";
+    text-color:       #ffffff;
+    background-color: transparent;
+}
+
+inputbar {
+    margin:      0 6px;
+    placeholder: "Search";
+}
+
+entry {
+    placeholder:       "Search";
+    placeholder-color: rgba(230, 237, 243, 0.55);
+}
+
+message {
+    margin:           0 6px;
+    background-color: transparent;
+}
+
+textbox {
+    text-color:       rgba(230, 237, 243, 0.7);
+    font:             "Noto Sans 9";
+    background-color: transparent;
+}
+
+listview {
+    margin:       0 6px 6px 6px;
+    spacing:      6px;
+    fixed-height: false;
+    scrollbar:    false;
+}
+
+element {
+    padding:          12px;
+    border-radius:    8px;
+    spacing:          10px;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+element selected.normal, element selected.active, element selected.urgent {
+    background-color: rgba(255, 255, 255, 0.22);
+    text-color:       #ffffff;
+}
+
+element-icon {
+    size: 56px;
+}
+
+element-text {
+    vertical-align: 0.5;
+    font:           "Noto Sans 10";
+}
