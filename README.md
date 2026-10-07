@@ -1,14 +1,15 @@
 # KewlRice
 
-My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the colors are a dark blue gray, and there's a little click sound when apps open and close. Alt+Tab works like on Windows 10.
+My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the colors are purple, and there's a little sound when apps open and close. Alt+Tab works like on Windows 10.
 
 ## What you get
 
 - Waybar at the top, fully transparent, with the clock on the left (click it to see the date, hover for a calendar)
 - Every app see-through at 80%, and new apps you install get it too
-- Kitty and Konsole with a dark blue gray background and clear text, and btop and cmatrix see-through in kitty too
-- A launcher on Super+R and a Windows style Alt+Tab menu that look the same
-- A click sound when an app opens or goes fullscreen, and the same click reversed when it closes
+- Kitty and Konsole with a purple background and clear text, and btop and cmatrix see-through in kitty too
+- A launcher on Super+R (press it again to close it) and a Windows style Alt+Tab menu that look the same
+- A clipboard history on Super+V
+- A sound when an app opens or goes fullscreen, and another when it closes
 - A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace)
 - Notifications that go away after 5 seconds
 - System apps like Settings and the volume mixer dark and see-through too
@@ -26,7 +27,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo plasma-integration btop cmatrix fastfetch playerctl ttf-jetbrains-mono-nerd
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo plasma-integration btop cmatrix fastfetch playerctl ttf-jetbrains-mono-nerd cliphist wl-clip-persist
 ```
 
 ## Install
@@ -71,6 +72,7 @@ chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 chmod +x ~/.config/fastfetch/spinning_logo.py
 chmod +x ~/.config/hypr/brave-video/brave_video.py
+chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
 ```
 
 4. Make KDE and Qt apps dark so they match the rest:
@@ -108,7 +110,8 @@ sudo localectl set-x11-keymap fr
 | Super + Shift + S | Take a snip, then draw on it, blur it or crop it |
 | Super + N | Hide the window |
 | Super + Shift + N | Show the hidden windows |
-| Super + V | Make the window float |
+| Super + V | Clipboard history, pick something to paste it |
+| Super + Shift + V | Make the window float |
 | Super + 1 to 0 | Go to a workspace |
 | Super + Shift + 1 to 0 | Move the window to a workspace |
 | Super + M | Log out of Hyprland |
@@ -123,8 +126,8 @@ In the Super + A view you can hold Super and drag an app with the left mouse but
 
 - How see-through apps are: look for `opacity = "0.8 0.8 0.8"` in `hyprland.lua`. Lower is more see-through.
 - How strong the blur is: change `size` in the `blur` part of `hyprland.lua`.
-- The click sound: swap `~/.config/hypr/sounds/click.mp3` and `click-reverse.mp3` for your own sounds with the same names.
-- The login and terminal sounds: swap `~/.config/hypr/sounds/login.mp3` and `terminal1.mp3`.
+- The app sounds: swap `~/.config/hypr/sounds/app-open.mp3` and `app-close.mp3` for your own sounds with the same names.
+- The login and terminal sounds: swap `~/.config/hypr/sounds/login.mp3`, `terminal-open.mp3` and `terminal-ready.mp3`.
 - The typing sounds: swap `~/.config/hypr/sounds/keys/terminal-key.wav` and `terminal-backspace.wav`.
 - The spin sound: swap `~/.config/fastfetch/spin.wav`.
 - Apps that stay solid: add their class to the `negative:` list next to the `opacity` rule in `hyprland.lua`. Run `hyprctl clients` to find an app's class.
