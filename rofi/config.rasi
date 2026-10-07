@@ -11,9 +11,9 @@ configuration {
 }
 
 * {
-    bg:                          rgba(43, 58, 74, 0.7);
+    bg:                          rgba(106, 69, 168, 0.7);
     fg:                          #e6edf3;
-    sel:                         rgba(74, 99, 128, 0.8);
+    sel:                         rgba(255, 255, 255, 0.18);
     font:                        "Noto Sans 10";
     background-color:            transparent;
     text-color:                  @fg;
