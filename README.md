@@ -35,7 +35,7 @@ sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wty
 1. Get the files:
 
 ```bash
-git clone https://github.com/infectedware/KewlRice.git
+git clone https://gitlab.com/infectedware/KewlRice.git
 cd KewlRice
 ```
 
