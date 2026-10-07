@@ -2,6 +2,22 @@
 
 My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the colors are purple, and there's a little sound when apps open and close. Alt+Tab works like on Windows 10.
 
+## Screenshots
+
+![Desktop](screenshots/desktop.png)
+
+![Terminal opening with the spinning Arch logo](screenshots/terminal-spin.gif)
+
+![Terminal with fastfetch](screenshots/terminal.png)
+
+![Tiled windows](screenshots/tiled.gif)
+
+![Tiled windows](screenshots/tiled.png)
+
+![App launcher](screenshots/launcher.png)
+
+The wallpaper in the screenshots isn't included, so pick your own.
+
 ## What you get
 
 - Waybar at the top, fully transparent, with the clock on the left (click it to see the date, hover for a calendar)
