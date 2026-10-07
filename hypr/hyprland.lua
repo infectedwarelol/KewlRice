@@ -7,7 +7,7 @@ hl.monitor({
 
 local terminal    = "kitty"
 local fileManager = "dolphin"
-local menu = "wofi --show drun"
+local menu = os.getenv("HOME") .. "/.config/hypr/launcher.sh"
 
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
