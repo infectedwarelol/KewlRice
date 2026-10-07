@@ -9,8 +9,7 @@ import time
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 MIRROR = str.maketrans({"/": "\\", "\\": "/", "(": ")", ")": "(", "<": ">", ">": "<", "[": "]", "]": "["})
-FRONT = "\x1b[1;36m"
-SIDE = "\x1b[0;36m"
+LOGO_COLOR = "\x1b[1;38;2;208;144;255m"
 RESET = "\x1b[0m"
 GAP = 4
 TURNS = 2
@@ -59,12 +58,11 @@ def spun_line(line, width, cos_angle):
 
 
 def frame(logo, width, info, rows, cos_angle):
-    color = FRONT if cos_angle > 0.35 else SIDE
     out = []
     for row in range(rows):
         left = spun_line(logo[row], width, cos_angle) if row < len(logo) else " " * width
         right = info[row] if row < len(info) else ""
-        out.append(f"{color}{left}{RESET}{' ' * GAP}{right}{RESET}\x1b[K")
+        out.append(f"{LOGO_COLOR}{left}{RESET}{' ' * GAP}{right}{RESET}\x1b[K")
     return "\n".join(out)
 
 
