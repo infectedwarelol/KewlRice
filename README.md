@@ -10,9 +10,9 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 
 ![Terminal with fastfetch](screenshots/terminal.png)
 
-![Tiled windows](screenshots/tiled.gif)
+![Tiled windows with cmatrix](screenshots/tiled.gif)
 
-![Tiled windows](screenshots/tiled.png)
+![Terminal, cmatrix and Dolphin side by side](screenshots/tiled.png)
 
 ![App launcher](screenshots/launcher.png)
 
@@ -26,14 +26,15 @@ The wallpaper in the screenshots isn't included, so pick your own.
 - A launcher on Super+R (press it again to close it) and a Windows style Alt+Tab menu that look the same
 - A clipboard history on Super+V
 - A sound when an app opens or goes fullscreen, and another when it closes
-- A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace)
+- A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace, and it keeps clicking while you hold a key)
 - Notifications that go away after 5 seconds
 - System apps like Settings and the volume mixer dark and see-through too
 - Brave turns solid on YouTube and whenever a video is playing, so videos look sharp
-- Steam and Steam games stay solid, so games look the way they should
+- Discord turns solid while you watch a video in it, then goes back to see-through
+- Steam, Steam games and Minecraft stay solid, so games look the way they should
 - A snipping tool like on Windows, with drawing, blur and crop
 - fastfetch with a spinning Arch logo and a spin sound every time you open a terminal or run it
-- An Arch blue terminal prompt with your name, the folder you are in and the time
+- A purple terminal prompt with your name, the folder you are in and the time
 - French keyboard layout (easy to change, see below)
 
 ## What you need
@@ -65,7 +66,15 @@ cd KewlRice
 
 If `unzip` is missing, install it with `sudo pacman -S unzip`. Every step below works the same from inside that folder.
 
-2. Back up your old configs if you have any you care about, including your `~/.bashrc`. The next step replaces them.
+2. Back up your old configs, because the next step replaces them:
+
+```bash
+mkdir -p ~/rice-backup
+cp -r ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.config/btop ~/.config/fastfetch ~/rice-backup/ 2>/dev/null
+cp ~/.bashrc ~/rice-backup/bashrc 2>/dev/null
+```
+
+To go back to your old setup later, copy those files back from `~/rice-backup`.
 
 3. Copy everything into place:
 
