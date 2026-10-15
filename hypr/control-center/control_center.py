@@ -17,6 +17,14 @@ gi.require_version("GdkPixbuf", "2.0")
 gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, GtkLayerShell
 
+
+try:
+    gi.require_version("GLibUnix", "2.0")
+    from gi.repository import GLibUnix
+    unix_signal_add = GLibUnix.signal_add
+except (ValueError, ImportError):
+    unix_signal_add = GLib.unix_signal_add
+
 HOME = Path.home()
 THEME_SWITCH_DIR = Path(__file__).resolve().parent.parent / "theme-switch"
 POWER_MENU = HOME / ".config" / "hypr" / "power-menu" / "power_menu.py"
@@ -29,6 +37,7 @@ FALLBACK_COLORS = {
 }
 PANEL_WIDTH = 380
 ART_SIZE = 72
+ART_CACHE_LIMIT = 100
 REFRESH_MILLISECONDS = 1000
 SINK = "@DEFAULT_AUDIO_SINK@"
 SOURCE = "@DEFAULT_AUDIO_SOURCE@"
@@ -164,6 +173,10 @@ def cached_art(url):
         return path if path.is_file() else None
     target = ART_CACHE / (hashlib.sha1(url.encode()).hexdigest() + ".img")
     if target.is_file():
+        try:
+            target.touch()
+        except OSError:
+            pass
         return target
     if not url.startswith("https://"):
         return None
@@ -171,21 +184,51 @@ def cached_art(url):
         ART_CACHE.mkdir(parents=True, exist_ok=True)
         with urllib.request.urlopen(url, timeout=5) as response:
             data = response.read(5_000_000)
-        temporary = target.with_suffix(".tmp")
+        temporary = target.with_name(f"{target.stem}.{os.getpid()}.tmp")
         temporary.write_bytes(data)
         temporary.replace(target)
+        prune_art_cache()
         return target
     except (OSError, ValueError):
         return None
+
+
+def prune_art_cache():
+    def modified(path):
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return 0
+    files = sorted((path for path in ART_CACHE.iterdir() if path.is_file()), key=modified, reverse=True)
+    for path in files[ART_CACHE_LIMIT:]:
+        path.unlink(missing_ok=True)
+
+
+def collect_state():
+    return {
+        "volumes": {target: read_volume(target) for target in (SINK, SOURCE)},
+        "network": network_status(),
+        "dnd": dnd_enabled(),
+        "player": player_state(),
+    }
+
+
+def is_control_center(pid):
+    try:
+        return Path(__file__).name.encode() in Path(f"/proc/{pid}/cmdline").read_bytes()
+    except OSError:
+        return False
 
 
 class ControlCenter:
     def __init__(self):
         self.palette = load_palette()
         self.updating = False
+        self.refreshing = False
+        self.refresh_pending = False
+        self.closing = False
         self.art_url = None
         self.build()
-        self.refresh()
 
     def build(self):
         provider = Gtk.CssProvider()
@@ -340,12 +383,30 @@ class ControlCenter:
         subprocess.Popen([sys.executable, str(POWER_MENU)], start_new_session=True)
 
     def refresh(self):
+        if self.refreshing:
+            self.refresh_pending = True
+            return True
+        self.refreshing = True
+        threading.Thread(target=self.collect, daemon=True).start()
+        return True
+
+    def collect(self):
+        try:
+            snapshot = collect_state()
+        except Exception:
+            snapshot = None
+        GLib.idle_add(self.apply_state, snapshot)
+
+    def apply_state(self, snapshot):
+        self.refreshing = False
+        if snapshot is None:
+            return False
         self.updating = True
         for target, button, scale, glyphs in (
             (SINK, self.volume_button, self.volume_scale, ("\U000f057e", "\U000f075f")),
             (SOURCE, self.mic_button, self.mic_scale, ("\U000f036c", "\U000f036d")),
         ):
-            volume, muted = read_volume(target)
+            volume, muted = snapshot["volumes"][target]
             if volume is None:
                 button.get_parent().hide()
                 continue
@@ -354,13 +415,13 @@ class ControlCenter:
             button.set_label(glyphs[1] if muted else glyphs[0])
             self.set_active(button, muted)
         self.updating = False
-        icon, name = network_status()
+        icon, name = snapshot["network"]
         self.network_tile.icon_label.set_label(icon)
         self.network_tile.value_label.set_label(name)
-        dnd = dnd_enabled()
+        dnd = snapshot["dnd"]
         self.dnd_tile.value_label.set_label("On" if dnd else "Off")
         self.set_active(self.dnd_tile, dnd)
-        state = player_state()
+        state = snapshot["player"]
         if state:
             self.media_box.show()
             self.song.set_label(state["title"] or "Unknown title")
@@ -375,7 +436,10 @@ class ControlCenter:
             self.media_box.hide()
             self.media_tile.value_label.set_label("Nothing playing")
             self.set_active(self.media_tile, False)
-        return True
+        if self.refresh_pending:
+            self.refresh_pending = False
+            self.refresh()
+        return False
 
     def load_art(self, url):
         path = cached_art(url)
@@ -403,17 +467,21 @@ class ControlCenter:
         return False
 
     def close(self):
+        if self.closing:
+            return
+        self.closing = True
         if not self.revealer.get_reveal_child():
+            Gtk.main_quit()
             return
         self.revealer.set_reveal_child(False)
         GLib.timeout_add(190, lambda: Gtk.main_quit() or False)
 
     def run(self):
         self.window.show_all()
-        self.refresh()
+        self.apply_state(collect_state())
         GLib.idle_add(lambda: self.revealer.set_reveal_child(True) or False)
         GLib.timeout_add(REFRESH_MILLISECONDS, self.refresh)
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.close() or False)
+        unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.close() or False)
         Gtk.main()
 
 
@@ -422,7 +490,8 @@ def close_running_panel():
         pid = int(PID_FILE.read_text().strip())
     except (OSError, ValueError):
         return False
-    if pid == os.getpid():
+    if pid == os.getpid() or not is_control_center(pid):
+        PID_FILE.unlink(missing_ok=True)
         return False
     try:
         os.kill(pid, signal.SIGTERM)
