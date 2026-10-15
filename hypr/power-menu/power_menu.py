@@ -14,6 +14,14 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gdk, GLib, Gtk, GtkLayerShell
 
+
+try:
+    gi.require_version("GLibUnix", "2.0")
+    from gi.repository import GLibUnix
+    unix_signal_add = GLibUnix.signal_add
+except (ValueError, ImportError):
+    unix_signal_add = GLib.unix_signal_add
+
 import cairo
 
 HOME = Path.home()
@@ -61,12 +69,20 @@ def play(sound):
         subprocess.Popen(["pw-play", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
 
 
+def is_power_menu(pid):
+    try:
+        return Path(__file__).name.encode() in Path(f"/proc/{pid}/cmdline").read_bytes()
+    except OSError:
+        return False
+
+
 def close_running_menu():
     try:
         pid = int(PID_FILE.read_text().strip())
     except (OSError, ValueError):
         return False
-    if pid == os.getpid():
+    if pid == os.getpid() or not is_power_menu(pid):
+        PID_FILE.unlink(missing_ok=True)
         return False
     try:
         os.kill(pid, signal.SIGTERM)
@@ -97,13 +113,16 @@ class PowerMenu:
         self.opacity = 0.0
         self.last_frame_time = None
         self.hit_boxes = []
+        self.icon_themes = []
+        for theme_name in ICON_THEMES:
+            theme = Gtk.IconTheme()
+            theme.set_custom_theme(theme_name)
+            self.icon_themes.append(theme)
         self.icons = [self.load_icon(action["icons"]) for action in ACTIONS]
         self.build_window()
 
     def load_icon(self, names):
-        for theme_name in ICON_THEMES:
-            theme = Gtk.IconTheme()
-            theme.set_custom_theme(theme_name)
+        for theme in self.icon_themes:
             for name in names:
                 try:
                     pixbuf = theme.load_icon(name, ICON_PIXELS, Gtk.IconLookupFlags.FORCE_SIZE)
@@ -267,7 +286,7 @@ class PowerMenu:
     def run(self):
         self.window.show_all()
         self.area.add_tick_callback(self.on_frame)
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.cancel() or False)
+        unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.cancel() or False)
         play("app-open.mp3")
         Gtk.main()
         self.window.destroy()
