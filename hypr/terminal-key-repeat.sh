@@ -13,24 +13,43 @@ if [ "$action" = "stop" ]; then
     exit 0
 fi
 
+[[ "$generation" =~ ^[0-9]+$ ]] || exit 1
+for marker in "$state_dir"/stop-*; do
+    marker_generation="${marker##*-}"
+    if [[ "$marker_generation" =~ ^[0-9]+$ ]] && (( marker_generation < generation - 50 || marker_generation > generation )); then
+        rm -f "$marker"
+    fi
+done
+
 [ -f "$sound" ] || exit 1
 pw-play "$sound" &
 
-repeat_rate=$(hyprctl getoption input:repeat_rate 2>/dev/null | awk '/^int:/ {print $2}')
-repeat_delay=$(hyprctl getoption input:repeat_delay 2>/dev/null | awk '/^int:/ {print $2}')
-[[ "$repeat_rate" =~ ^[0-9]+$ ]] || repeat_rate=25
-[[ "$repeat_delay" =~ ^[0-9]+$ ]] || repeat_delay=600
+settings_cache="$state_dir/settings"
+hyprland_config="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.lua"
+repeat_rate=""
+repeat_delay=""
+if [ -f "$settings_cache" ] && [ ! "$hyprland_config" -nt "$settings_cache" ]; then
+    read -r repeat_rate repeat_delay < "$settings_cache"
+fi
+if ! [[ "$repeat_rate" =~ ^[0-9]+$ && "$repeat_delay" =~ ^[0-9]+$ ]]; then
+    repeat_rate=$(hyprctl getoption input:repeat_rate 2>/dev/null | awk '/^int:/ {print $2}')
+    repeat_delay=$(hyprctl getoption input:repeat_delay 2>/dev/null | awk '/^int:/ {print $2}')
+    [[ "$repeat_rate" =~ ^[0-9]+$ ]] || repeat_rate=25
+    [[ "$repeat_delay" =~ ^[0-9]+$ ]] || repeat_delay=600
+    printf '%s %s\n' "$repeat_rate" "$repeat_delay" > "$settings_cache.$$" && mv -f "$settings_cache.$$" "$settings_cache"
+fi
 
 if [ "$repeat_rate" -le 0 ]; then
     rm -f "$stop_marker"
     exit 0
 fi
 
-repeat_interval=$(awk -v rate="$repeat_rate" 'BEGIN { printf "%.4f", 1 / rate }')
-delay_seconds=$(awk -v delay="$repeat_delay" 'BEGIN { printf "%.4f", delay / 1000 }')
+printf -v delay_seconds '%d.%03d' $((repeat_delay / 1000)) $((repeat_delay % 1000))
+repeat_microseconds=$((1000000 / repeat_rate))
+printf -v repeat_interval '%d.%06d' $((repeat_microseconds / 1000000)) $((repeat_microseconds % 1000000))
 
 sleep "$delay_seconds"
-for _ in $(seq 1 3000); do
+for ((count = 0; count < 3000; count++)); do
     [ -e "$stop_marker" ] && break
     pw-play "$sound" &
     sleep "$repeat_interval"
