@@ -7,6 +7,7 @@ import socket
 import subprocess
 import sys
 import threading
+import time
 
 BRAVE_CLASS = "brave-browser"
 DISCORD_CLASS = "discord"
@@ -39,33 +40,33 @@ def process_name(pid):
 
 def discord_audio_playing():
     try:
-        nodes = json.loads(subprocess.run(["pw-dump"], capture_output=True, text=True).stdout)
-    except json.JSONDecodeError:
+        output = subprocess.run(["pactl", "-f", "json", "list", "sink-inputs"], capture_output=True, text=True, timeout=5).stdout
+        streams = json.loads(output or "[]")
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
         return False
-    client_pids = {}
-    for node in nodes:
-        if node.get("type") == "PipeWire:Interface:Client":
-            props = (node.get("info") or {}).get("props") or {}
-            client_pids[node.get("id")] = props.get("application.process.id") or props.get("pipewire.sec.pid")
-    for node in nodes:
-        info = node.get("info") or {}
-        props = info.get("props") or {}
-        if props.get("media.class") != "Stream/Output/Audio" or info.get("state") != "running":
+    for stream in streams:
+        if stream.get("corked", True):
             continue
-        pid = props.get("application.process.id") or client_pids.get(props.get("client.id"))
-        if "discord" in process_name(pid):
+        props = stream.get("properties") or {}
+        binary = (props.get("application.process.binary") or "").lower()
+        if "discord" in binary or "discord" in process_name(props.get("application.process.id")):
             return True
     return False
 
 
-def watch_discord(events):
+def watch_discord(events, discord_open):
     playing = False
     while True:
+        if not discord_open.is_set():
+            if playing:
+                playing = False
+                events.put(("discord", playing))
+            discord_open.wait()
         now = discord_audio_playing()
         if now != playing:
             playing = now
             events.put(("discord", playing))
-        threading.Event().wait(1)
+        time.sleep(1)
 
 
 def set_opacity(address, value):
@@ -84,7 +85,7 @@ def watch_player(events):
             events.put(("player", line.strip()))
         process.wait()
         events.put(("player", "Stopped"))
-        threading.Event().wait(2)
+        time.sleep(2)
 
 
 def watch_hyprland(events):
@@ -100,9 +101,9 @@ def watch_hyprland(events):
             buffer += chunk
             while b"\n" in buffer:
                 line, buffer = buffer.split(b"\n", 1)
-                name = line.split(b">>", 1)[0]
-                if name in (b"openwindow", b"windowtitlev2", b"windowtitle"):
-                    events.put(("hyprland", name.decode()))
+                name, _, payload = line.partition(b">>")
+                if name in (b"openwindow", b"closewindow", b"windowtitlev2"):
+                    events.put((name.decode(), payload.decode(errors="replace")))
 
 
 def main():
@@ -113,9 +114,10 @@ def main():
         sys.exit(0)
 
     events = queue.Queue()
+    discord_open = threading.Event()
     threading.Thread(target=watch_player, args=(events,), daemon=True).start()
     threading.Thread(target=watch_hyprland, args=(events,), daemon=True).start()
-    threading.Thread(target=watch_discord, args=(events,), daemon=True).start()
+    threading.Thread(target=watch_discord, args=(events, discord_open), daemon=True).start()
 
     playing = False
     discord_playing = False
@@ -125,9 +127,19 @@ def main():
         source, value = events.get()
         if source == "player":
             playing = value == "Playing"
-        if source == "discord":
+        elif source == "discord":
             discord_playing = value
+        elif source == "openwindow":
+            if value.split(",", 3)[2:3] not in ([BRAVE_CLASS], [DISCORD_CLASS]):
+                continue
+        elif source in ("closewindow", "windowtitlev2"):
+            if "0x" + value.split(",", 1)[0] not in applied:
+                continue
         windows = watched_windows()
+        if any(window["class"] == DISCORD_CLASS for window in windows):
+            discord_open.set()
+        else:
+            discord_open.clear()
         for window in windows:
             if window["class"] == DISCORD_CLASS:
                 solid = discord_playing
