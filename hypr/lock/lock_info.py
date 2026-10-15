@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import calendar
 import datetime
+import fcntl
 import html
 import json
 import os
@@ -8,7 +9,6 @@ import random
 import subprocess
 import sys
 import time
-import urllib.request
 from pathlib import Path
 
 HOME = Path.home()
@@ -17,6 +17,7 @@ COLORS_FILE = LOCK_DIR / "colors.json"
 LOCATION_FILE = LOCK_DIR / "weather-location"
 CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME") or HOME / ".cache") / "kewlrice"
 WEATHER_CACHE = CACHE_DIR / "weather.json"
+WEATHER_LOCK = CACHE_DIR / "weather.lock"
 WEATHER_MAX_AGE = 1800
 FALLBACK_COLORS = {"text": "#2e1a47", "muted": "#6b5a85", "accent": "#9b59ff", "accent_light": "#d090ff"}
 WEATHER_ICONS = (
@@ -62,27 +63,50 @@ def span(text, color, points=None, bold=False, family=None):
     return f"<span {' '.join(attributes)}>{html.escape(str(text))}</span>"
 
 
-def weather_data():
+def fresh_weather():
     try:
-        if WEATHER_CACHE.is_file() and time.time() - WEATHER_CACHE.stat().st_mtime < WEATHER_MAX_AGE:
+        if time.time() - WEATHER_CACHE.stat().st_mtime < WEATHER_MAX_AGE:
             return json.loads(WEATHER_CACHE.read_text())
     except (OSError, ValueError):
         pass
+    return None
+
+
+def cached_weather():
     try:
-        location = "".join(LOCATION_FILE.read_text().split())
-    except OSError:
-        location = ""
-    try:
-        with urllib.request.urlopen(f"https://wttr.in/{location}?format=j1", timeout=5) as response:
-            data = json.loads(response.read())
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        WEATHER_CACHE.write_text(json.dumps(data))
-        return data
+        return json.loads(WEATHER_CACHE.read_text())
     except (OSError, ValueError):
+        return None
+
+
+def weather_data():
+    data = fresh_weather()
+    if data is not None:
+        return data
+    try:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        lock = open(WEATHER_LOCK, "w")
+    except OSError:
+        return cached_weather()
+    with lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        data = fresh_weather()
+        if data is not None:
+            return data
         try:
-            return json.loads(WEATHER_CACHE.read_text())
+            location = "".join(LOCATION_FILE.read_text().split())
+        except OSError:
+            location = ""
+        try:
+            import urllib.request
+            with urllib.request.urlopen(f"https://wttr.in/{location}?format=j1", timeout=5) as response:
+                data = json.loads(response.read())
+            temporary = WEATHER_CACHE.with_name(f".{WEATHER_CACHE.name}.{os.getpid()}")
+            temporary.write_text(json.dumps(data))
+            os.replace(temporary, WEATHER_CACHE)
+            return data
         except (OSError, ValueError):
-            return None
+            return cached_weather()
 
 
 def weather_icon(code):
