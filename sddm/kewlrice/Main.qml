@@ -39,6 +39,7 @@ Rectangle {
     property string hostName: ""
     property string temperaturePath: ""
     property string headsetBatteryPath: ""
+    property int headsetScanCountdown: 0
     property string headsetName: ""
     property string osName: ""
     property string systemKeyboardLayout: ""
@@ -199,8 +200,13 @@ Rectangle {
 
         let batteryText = headsetBatteryPath !== "" ? readFile(headsetBatteryPath).trim() : ""
         if (batteryText === "") {
-            findHeadsetBattery()
-            batteryText = headsetBatteryPath !== "" ? readFile(headsetBatteryPath).trim() : ""
+            if (headsetScanCountdown <= 0) {
+                findHeadsetBattery()
+                headsetScanCountdown = 15
+                batteryText = headsetBatteryPath !== "" ? readFile(headsetBatteryPath).trim() : ""
+            } else {
+                headsetScanCountdown--
+            }
         }
         headsetBattery = batteryText !== "" ? Number(batteryText) : -1
 
