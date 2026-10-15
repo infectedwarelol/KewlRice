@@ -1,0 +1,8 @@
+* {
+    bg:             rgba({{background.rgb}}, 0.7);
+    fg:             {{foreground}};
+    fg-dim:         rgba({{foreground.rgb}}, 0.7);
+    fg-placeholder: rgba({{foreground.rgb}}, 0.55);
+    active:         {{launcher_active|accent}};
+    urgent:         {{urgent}};
+}

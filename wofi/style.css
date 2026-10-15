@@ -1,6 +1,6 @@
 window {
-    background-color: rgba(106, 69, 168, 0.7);
-    border: 1px solid rgba(230, 237, 243, 0.15);
+    background-color: rgba(--wofi-rgb-color0, 0.7);
+    border: 1px solid rgba(--wofi-rgb-color1, 0.15);
     border-radius: 10px;
 }
 
@@ -16,7 +16,7 @@ window {
     margin: 6px;
     border: none;
     border-radius: 6px;
-    color: #e6edf3;
+    color: --wofi-color1;
     background-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -32,7 +32,7 @@ window {
 
 #text {
     margin: 4px;
-    color: #e6edf3;
+    color: --wofi-color1;
 }
 
 #text:selected {

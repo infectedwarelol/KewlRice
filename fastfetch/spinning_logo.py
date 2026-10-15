@@ -9,14 +9,32 @@ import time
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 MIRROR = str.maketrans({"/": "\\", "\\": "/", "(": ")", ")": "(", "<": ">", ">": "<", "[": "]", "]": "["})
-LOGO_COLOR = "\x1b[1;38;2;208;144;255m"
+LOGO_COLOR_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo-color")
+DEFAULT_LOGO_RGB = "208;144;255"
 RESET = "\x1b[0m"
 GAP = 4
 TURNS = 2
 DURATION = 2.5
 MIN_INFO_WIDTH = 20
 FPS = 40
-SPIN_SOUND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spin.wav")
+SPIN_SOUNDS = (
+    os.path.expanduser("~/.config/hypr/sounds/spin.wav"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "spin.wav"),
+)
+
+
+def load_logo_color():
+    try:
+        with open(LOGO_COLOR_FILE) as color_file:
+            rgb = color_file.read().strip()
+    except OSError:
+        rgb = ""
+    if not re.fullmatch(r"\d{1,3};\d{1,3};\d{1,3}", rgb) or any(int(part) > 255 for part in rgb.split(";")):
+        rgb = DEFAULT_LOGO_RGB
+    return f"\x1b[1;38;2;{rgb}m"
+
+
+LOGO_COLOR = load_logo_color()
 
 
 def fastfetch(*args):
@@ -98,8 +116,9 @@ def main():
     sys.stdout.write("\x1b[?25l")
     first = True
     sound = None
-    if os.path.exists(SPIN_SOUND):
-        sound = subprocess.Popen(["pw-play", SPIN_SOUND], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    spin_sound = next((path for path in SPIN_SOUNDS if os.path.exists(path)), None)
+    if spin_sound:
+        sound = subprocess.Popen(["pw-play", spin_sound], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         start = time.monotonic()
         while True:

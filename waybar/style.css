@@ -1,32 +1,38 @@
 @import url("file:///etc/xdg/waybar/style.css");
+@import url("colors.css");
 
 window#waybar {
     background-color: transparent;
     border-bottom: none;
-    color: #e6edf3;
+    color: @kewl_foreground;
 }
 
 #workspaces button.focused, #workspaces button.active,
 #clock, #cpu, #memory, #temperature, #pulseaudio, #pulseaudio.muted,
-#tray, #idle_inhibitor {
+#tray, #idle_inhibitor, #custom-control {
     background-color: transparent;
-    color: #e6edf3;
+    color: @kewl_foreground;
 }
 
 #workspaces button.focused, #workspaces button.active {
     background-color: rgba(255, 255, 255, 0.12);
 }
 
-#workspaces button:hover, #pulseaudio:hover, #idle_inhibitor.activated {
+#workspaces button:hover, #pulseaudio:hover, #idle_inhibitor.activated, #custom-control:hover {
     background-color: rgba(255, 255, 255, 0.15);
-    color: #e6edf3;
+    color: @kewl_foreground;
 }
 
 #pulseaudio.muted {
-    color: rgba(230, 237, 243, 0.5);
+    color: alpha(@kewl_foreground, 0.5);
 }
 
 #temperature.critical, #workspaces button.urgent, #tray > .needs-attention {
     background-color: transparent;
-    color: #ff6b6b;
+    color: @kewl_urgent;
+}
+
+#custom-control {
+    padding: 0 10px;
+    font-size: 15px;
 }

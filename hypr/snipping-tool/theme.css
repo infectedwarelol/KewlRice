@@ -1,13 +1,15 @@
+@import url("colors.css");
+
 * {
     font-family: "Noto Sans";
     font-size: 10pt;
-    color: #e6edf3;
+    color: @kewl_foreground;
     -gtk-icon-shadow: none;
     text-shadow: none;
 }
 
 window.snip-editor {
-    background-color: rgba(43, 58, 74, 0.7);
+    background-color: alpha(@kewl_surface, 0.7);
 }
 
 window.snip-overlay {
@@ -15,7 +17,7 @@ window.snip-overlay {
 }
 
 .snip-toolbar {
-    background-color: rgba(43, 58, 74, 0.92);
+    background-color: alpha(@kewl_surface, 0.92);
     border-radius: 10px;
     padding: 6px;
 }
@@ -42,7 +44,7 @@ button:hover, menubutton > button:hover {
 }
 
 button:checked, button:active, menubutton > button:checked {
-    background-color: rgba(74, 99, 128, 0.8);
+    background-color: alpha(@kewl_secondary, 0.8);
 }
 
 button:disabled {
@@ -50,7 +52,7 @@ button:disabled {
 }
 
 popover, popover.background {
-    background-color: rgba(43, 58, 74, 0.97);
+    background-color: alpha(@kewl_surface, 0.97);
     border: none;
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
@@ -77,12 +79,12 @@ scale trough {
 }
 
 scale highlight {
-    background-color: #4a6380;
+    background-color: @kewl_secondary;
     border-radius: 4px;
 }
 
 scale slider {
-    background-color: #e6edf3;
+    background-color: @kewl_foreground;
     background-image: none;
     border: none;
     border-radius: 50%;
@@ -97,7 +99,7 @@ scrolledwindow, viewport, .snip-canvas-holder {
 }
 
 separator {
-    background-color: rgba(230, 237, 243, 0.15);
+    background-color: alpha(@kewl_foreground, 0.15);
     min-width: 1px;
     margin: 6px 4px;
 }
@@ -108,18 +110,18 @@ separator {
 }
 
 .snip-empty-hint {
-    color: rgba(230, 237, 243, 0.7);
+    color: alpha(@kewl_foreground, 0.7);
 }
 
 .snip-toast {
-    background-color: rgba(74, 99, 128, 0.95);
+    background-color: alpha(@kewl_secondary, 0.95);
     border-radius: 8px;
     padding: 8px 16px;
     margin-bottom: 20px;
 }
 
 menu, .menu, .context-menu {
-    background-color: rgba(43, 58, 74, 0.97);
+    background-color: alpha(@kewl_surface, 0.97);
     border: none;
     border-radius: 8px;
     padding: 4px;
@@ -131,7 +133,7 @@ menuitem {
 }
 
 menuitem:hover {
-    background-color: rgba(74, 99, 128, 0.8);
+    background-color: alpha(@kewl_secondary, 0.8);
 }
 
 .window-close-button:hover {

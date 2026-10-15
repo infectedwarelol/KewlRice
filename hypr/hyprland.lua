@@ -8,10 +8,24 @@ hl.monitor({
 local terminal    = "kitty"
 local fileManager = "dolphin"
 local menu = os.getenv("HOME") .. "/.config/hypr/launcher.sh"
+local themeSwitch = os.getenv("HOME") .. "/.config/hypr/theme-switch/theme_switch.py"
+
+local themeColors = {
+    border_active   = "rgba(d090ffee)",
+    border_gradient = "rgba(9b59ffee)",
+    border_inactive = "rgba(595959aa)",
+}
+local themeColorsLoaded, loadedThemeColors = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/colors.lua")
+if themeColorsLoaded and type(loadedThemeColors) == "table" then
+    for key, value in pairs(loadedThemeColors) do
+        themeColors[key] = value
+    end
+end
 
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
     hl.exec_cmd("mako")
+    hl.exec_cmd(themeSwitch .. " --restore")
     hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/login.mp3")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/brave-video/brave_video.py")
     hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
@@ -31,8 +45,8 @@ hl.config({
         border_size = 2,
 
         col = {
-            active_border   = { colors = {"rgba(d090ffee)", "rgba(9b59ffee)"}, angle = 45 },
-            inactive_border = "rgba(595959aa)",
+            active_border   = { colors = { themeColors.border_active, themeColors.border_gradient }, angle = 45 },
+            inactive_border = themeColors.border_inactive,
         },
 
         resize_on_border = false,
@@ -160,19 +174,33 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V",         hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/clipboard/clipboard_menu.py"))
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd(themeSwitch .. " --menu"))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/lock/lock.sh"))
+hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/power-menu/power_menu.py"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen())
+local function ToggleFullscreen()
+    local active = hl.get_active_window()
+    local leaving = active and active.fullscreen > 0 and active.class ~= "kitty"
+    hl.dispatch(hl.dsp.window.fullscreen())
+    if leaving then
+        hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/app-close.mp3")
+    end
+end
+hl.bind(mainMod .. " + F", ToggleFullscreen)
 hl.bind(mainMod .. " + N",         hl.dsp.window.move({ workspace = "special:minimized", follow = false }))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))
 
-hl.bind("F11", hl.dsp.window.fullscreen())
+hl.bind("F11", ToggleFullscreen)
 
 local showDesktopState = nil
+local showDesktopMuted = false
 function ShowDesktopRestoreAnimations()
     hl.config({ animations = { enabled = true } })
+    showDesktopMuted = false
 end
 function ShowDesktopToggle()
+    showDesktopMuted = true
     hl.config({ animations = { enabled = false } })
     hl.exec_cmd("sleep 0.15; hyprctl dispatch ShowDesktopRestoreAnimations")
     local hidden = hl.get_windows({ workspace = "special:desktop" })
@@ -190,8 +218,12 @@ function ShowDesktopToggle()
         if not ws then return end
         local active = hl.get_active_window()
         showDesktopState = { workspace = ws.name, focused = active and active.address }
-        for _, w in ipairs(ws:get_windows()) do
+        local windows = ws:get_windows()
+        for _, w in ipairs(windows) do
             hl.dispatch(hl.dsp.window.move({ workspace = "special:desktop", window = "address:" .. w.address, follow = false }))
+        end
+        if #windows > 0 then
+            hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/app-close.mp3")
         end
     end
 end
@@ -556,7 +588,7 @@ hl.window_rule({
 
 hl.window_rule({
     name  = "transparent-apps",
-    match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*|com\\.mojang\\.minecraft|snipping-tool|steam|steam_app_.*|steamwebhelper)$" },
+    match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*|com\\.mojang\\.minecraft|mpv|snipping-tool|steam|steam_app_.*|steamwebhelper)$" },
 
     opacity = "0.8 0.8 0.8",
 })
@@ -580,7 +612,7 @@ hl.window_rule({
 
 hl.layer_rule({
     name  = "blur-waybar-rofi",
-    match = { namespace = "^(waybar|rofi)$" },
+    match = { namespace = "^(waybar|rofi|kewl-theme-picker|kewl-power)$" },
 
     blur         = true,
     ignore_alpha = 0.2,
@@ -616,7 +648,7 @@ hl.on("window.close", function(window)
     end
 end)
 hl.on("window.fullscreen", function(window)
-    if window and window.fullscreen > 0 and window.class ~= "kitty" and not isSnipOverlay(window) then
+    if window and window.fullscreen > 0 and window.class ~= "kitty" and not isSnipOverlay(window) and not showDesktopMuted then
         hl.exec_cmd(clickSound)
     end
 end)
@@ -633,4 +665,14 @@ hl.window_rule({
     match = { class = "^snipping-tool$", title = "^Snipping overlay$" },
 
     no_anim = true,
+})
+
+hl.window_rule({
+    name  = "spotify-lite",
+    match = { class = "^([Ss]potify)$" },
+
+    no_blur   = true,
+    no_shadow = true,
+    no_anim   = true,
+    workspace = "9",
 })

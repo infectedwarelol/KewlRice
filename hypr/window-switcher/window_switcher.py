@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import fcntl
-import subprocess
 import sys
 import time
 
 from desktop_icons import icon_names_by_window_class
-from hyprland_ipc import list_windows, switch_to_window, switcher_menu_is_open
+from hyprland_ipc import list_windows, switch_to_window
 from keypress_tracker import (
     LOCK_FILE,
     alt_released_after,
@@ -32,45 +31,16 @@ def run_switcher(since):
     windows = list_windows()
     if len(windows) < 2:
         return
-    last_row = len(windows) - 1
 
     if alt_released():
-        switch_to_window(windows[min(tabs_pressed(), last_row)])
+        switch_to_window(windows[tabs_pressed() % len(windows)])
         return
 
-    icons = icon_names_by_window_class()
-    rows = "".join(
-        f"{w['class']}   {w['title']}\0icon\x1f{icons.get(w['class'].lower(), w['class'].lower())}\n"
-        for w in windows
-    )
-    start_row = min(tabs_pressed(), last_row)
-    menu = subprocess.Popen(
-        ["rofi", "-dmenu", "-i", "-p", "", "-format", "i", "-selected-row", str(start_row)],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-    menu.stdin.write(rows)
-    menu.stdin.close()
+    from planet_view import choose_window
 
-    menu_ready = False
-    enter_sent = False
-    while menu.poll() is None:
-        if not menu_ready and switcher_menu_is_open():
-            menu_ready = True
-            time.sleep(0.05)
-            missed_tabs = min(tabs_pressed(), last_row) - start_row
-            if missed_tabs > 0:
-                subprocess.run(["wtype", *(["-k", "Down"] * missed_tabs)])
-        if menu_ready and not enter_sent and alt_released():
-            enter_sent = True
-            if menu.poll() is None:
-                subprocess.run(["wtype", "-k", "Return"])
-        time.sleep(0.02)
-
-    choice = menu.stdout.read().strip()
-    if menu.returncode == 0 and choice.isdigit():
-        switch_to_window(windows[int(choice)])
+    choice = choose_window(windows, icon_names_by_window_class(), tabs_pressed, alt_released)
+    if choice is not None:
+        switch_to_window(windows[choice])
 
 
 def main():

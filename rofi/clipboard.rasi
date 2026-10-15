@@ -28,7 +28,7 @@ inputbar {
 
 entry {
     placeholder:       "Search";
-    placeholder-color: rgba(230, 237, 243, 0.55);
+    placeholder-color: @fg-placeholder;
 }
 
 message {
@@ -37,7 +37,7 @@ message {
 }
 
 textbox {
-    text-color:       rgba(230, 237, 243, 0.7);
+    text-color:       @fg-dim;
     font:             "Noto Sans 9";
     background-color: transparent;
 }

@@ -1,4 +1,8 @@
 default-timeout=5000
+include=~/.config/mako/colors
 
 [mode=do-not-disturb]
+invisible=1
+
+[desktop-entry=org.kde.kded6 summary~="^USB Device (Detected|Removed)$"]
 invisible=1

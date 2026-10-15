@@ -13,7 +13,8 @@
         "cpu",
         "memory",
         "temperature",
-        "tray"
+        "tray",
+        "custom/control"
     ],
     "hyprland/window": {
         "max-length": 60,
@@ -62,5 +63,10 @@
     },
     "tray": {
         "spacing": 10,
+    },
+    "custom/control": {
+        "format": "󰒓",
+        "tooltip-format": "Control center",
+        "on-click": "~/.config/hypr/control-center/control_center.py"
     }
 }

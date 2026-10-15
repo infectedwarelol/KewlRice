@@ -10,9 +10,9 @@ configuration {
     me-accept-entry: "MousePrimary,Alt+MousePrimary";
 }
 
+@import "colors.rasi"
+
 * {
-    bg:                          rgba(106, 69, 168, 0.7);
-    fg:                          #e6edf3;
     sel:                         rgba(255, 255, 255, 0.18);
     font:                        "Noto Sans 10";
     background-color:            transparent;
@@ -23,8 +23,8 @@ configuration {
     foreground:                  @fg;
     lightbg:                     transparent;
     lightfg:                     @fg;
-    blue:                        #8fb8de;
-    red:                         #ff6b6b;
+    blue:                        @active;
+    red:                         @urgent;
     normal-background:           transparent;
     normal-foreground:           @fg;
     alternate-normal-background: transparent;
@@ -32,15 +32,15 @@ configuration {
     selected-normal-background:  @sel;
     selected-normal-foreground:  #ffffff;
     active-background:           transparent;
-    active-foreground:           #8fb8de;
+    active-foreground:           @active;
     alternate-active-background: transparent;
-    alternate-active-foreground: #8fb8de;
+    alternate-active-foreground: @active;
     selected-active-background:  @sel;
     selected-active-foreground:  #ffffff;
     urgent-background:           transparent;
-    urgent-foreground:           #ff6b6b;
+    urgent-foreground:           @urgent;
     alternate-urgent-background: transparent;
-    alternate-urgent-foreground: #ff6b6b;
+    alternate-urgent-foreground: @urgent;
     selected-urgent-background:  @sel;
     selected-urgent-foreground:  #ffffff;
 }

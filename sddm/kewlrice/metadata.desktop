@@ -1,0 +1,8 @@
+[SddmGreeterTheme]
+Name=KewlRice
+Description=Glass login screen that follows the active KewlRice theme
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+QtVersion=6

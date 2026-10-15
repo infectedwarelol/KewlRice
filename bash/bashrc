@@ -2,22 +2,21 @@
 
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
-alias cmatrix='cmatrix -C magenta'
 export MAVEN_OPTS="-Xmx1g"
 _pill_left=$'\ue0b6'
 _pill_right=$'\ue0b4'
 _arrow=$'\ue0b0'
 _arch_logo=$'\uf303'
 _clock=$'\uf017'
-_purple='155;89;255'
-_white='230;237;243'
-PS1="\[\e[0;38;2;${_purple}m\]${_pill_left}\[\e[1;38;2;255;255;255;48;2;${_purple}m\] ${_arch_logo} \u \[\e[22;38;2;${_purple};48;2;${_white}m\]${_arrow}\[\e[1;38;2;${_purple};48;2;${_white}m\] \w \[\e[22;38;2;${_white};48;2;${_purple}m\]${_arrow}\[\e[0;38;2;255;255;255;48;2;${_purple}m\] ${_clock} \A \[\e[0;38;2;${_purple}m\]${_pill_right}\[\e[0m\] "
+_primary='155;89;255'
+_foreground='230;237;243'
+[ -r "$HOME/.config/kewlrice/colors.sh" ] && . "$HOME/.config/kewlrice/colors.sh"
+PS1="\[\e[0;38;2;${_primary}m\]${_pill_left}\[\e[1;38;2;255;255;255;48;2;${_primary}m\] ${_arch_logo} \u \[\e[22;38;2;${_primary};48;2;${_foreground}m\]${_arrow}\[\e[1;38;2;${_primary};48;2;${_foreground}m\] \w \[\e[22;38;2;${_foreground};48;2;${_primary}m\]${_arrow}\[\e[0;38;2;255;255;255;48;2;${_primary}m\] ${_clock} \A \[\e[0;38;2;${_primary}m\]${_pill_right}\[\e[0m\] "
 export PATH="$HOME/.npm-global/bin:$PATH"
 
 fastfetch() {
     if [ $# -eq 0 ] && [ -t 1 ]; then
         python3 "$HOME/.config/fastfetch/spinning_logo.py" "$(command fastfetch --pipe false --logo none)" 2>/dev/null || command fastfetch
-        ( pw-play "$HOME/.config/hypr/sounds/terminal-ready.mp3" >/dev/null 2>&1 & )
     else
         command fastfetch "$@"
     fi
@@ -29,3 +28,22 @@ if [ -z "$FASTFETCH_SHOWN" ]; then
     fastfetch
 fi
 export PATH="$HOME/.local/bin:$PATH"
+cmatrix() {
+    local _accent='#d090ff'
+    [ -r "$HOME/.config/kewlrice/colors.sh" ] && . "$HOME/.config/kewlrice/colors.sh"
+    printf '\e]4;2;%s\a\e]4;10;%s\a' "$_accent" "$_accent"
+    command cmatrix "$@"
+    local status=$?
+    printf '\e]104;2;10\a'
+    return $status
+}
+ani-cli() {
+    if [ -n "${KITTY_LISTEN_ON:-}" ]; then
+        kitty @ set-background-opacity 1 >/dev/null 2>&1
+        command ani-cli "$@"
+        local status=$?
+        kitty @ set-background-opacity 0.8 >/dev/null 2>&1
+        return $status
+    fi
+    command ani-cli "$@"
+}

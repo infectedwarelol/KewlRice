@@ -16,4 +16,4 @@ if ! flock -n 9; then
 fi
 
 date +%s%N > "$started_file"
-wofi --show drun 9>&-
+wofi --show drun --color "$HOME/.config/wofi/colors" 9>&-
