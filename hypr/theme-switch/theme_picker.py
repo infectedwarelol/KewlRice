@@ -12,11 +12,20 @@ gi.require_version("GdkPixbuf", "2.0")
 gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, GtkLayerShell
 
+
+try:
+    gi.require_version("GLibUnix", "2.0")
+    from gi.repository import GLibUnix
+    unix_signal_add = GLibUnix.signal_add
+except (ValueError, ImportError):
+    unix_signal_add = GLib.unix_signal_add
+
 import cairo
 
 PID_FILE = Path(os.environ.get("XDG_RUNTIME_DIR") or "/tmp") / "kewl-theme-picker.pid"
 THUMBNAIL_DIR = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "kewlrice" / "thumbnails"
 THUMBNAIL_HEIGHT = 720
+THUMBNAIL_LIMIT = 40
 DOT_KEYS = ("background", "surface", "primary", "secondary", "accent", "foreground")
 SCROLL_RATE = 12.0
 FOCUS_GROWTH = 0.16
@@ -29,12 +38,20 @@ def hex_to_rgb(color):
     return tuple(int(color[index:index + 2], 16) / 255 for index in (0, 2, 4))
 
 
+def is_theme_switcher(pid):
+    try:
+        return b"theme_switch" in Path(f"/proc/{pid}/cmdline").read_bytes()
+    except OSError:
+        return False
+
+
 def close_running_picker():
     try:
         pid = int(PID_FILE.read_text().strip())
     except (OSError, ValueError):
         return False
-    if pid == os.getpid():
+    if pid == os.getpid() or not is_theme_switcher(pid):
+        PID_FILE.unlink(missing_ok=True)
         return False
     try:
         os.kill(pid, signal.SIGTERM)
@@ -54,13 +71,28 @@ def load_thumbnail(wallpaper):
         key = hashlib.sha1(f"{wallpaper}:{stat.st_mtime_ns}:{stat.st_size}:{THUMBNAIL_HEIGHT}".encode()).hexdigest()
         cached = THUMBNAIL_DIR / f"{key}.png"
         if cached.is_file():
+            cached.touch()
             return GdkPixbuf.Pixbuf.new_from_file(str(cached))
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(str(wallpaper), -1, THUMBNAIL_HEIGHT, True)
         THUMBNAIL_DIR.mkdir(parents=True, exist_ok=True)
-        pixbuf.savev(str(cached), "png", [], [])
+        temporary = cached.with_name(f".{key}.{os.getpid()}.png")
+        pixbuf.savev(str(temporary), "png", [], [])
+        os.replace(temporary, cached)
+        prune_thumbnails()
         return pixbuf
     except (OSError, GLib.Error):
         return None
+
+
+def prune_thumbnails():
+    def modified(path):
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return 0
+    thumbnails = sorted(THUMBNAIL_DIR.glob("*.png"), key=modified, reverse=True)
+    for path in thumbnails[THUMBNAIL_LIMIT:]:
+        path.unlink(missing_ok=True)
 
 
 def rounded_rectangle(cr, x, y, width, height, radius):
@@ -402,7 +434,7 @@ class ThemePicker:
         self.prerender()
         self.window.show_all()
         self.area.add_tick_callback(self.on_frame)
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.finish(None) or False)
+        unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.finish(None) or False)
         Gtk.main()
         self.window.destroy()
         while Gtk.events_pending():

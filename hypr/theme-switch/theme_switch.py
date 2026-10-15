@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import fcntl
 import filecmp
+import functools
 import json
 import os
 import re
@@ -217,7 +218,8 @@ def with_alpha(color, alpha):
     return color + f"{round(alpha * 255):02x}"
 
 
-def wallpaper_is_dark(wallpaper, palette):
+@functools.lru_cache(maxsize=4)
+def wallpaper_is_dark(wallpaper, background):
     try:
         import cairo
         surface = cairo.ImageSurface.create_from_png(str(wallpaper))
@@ -232,11 +234,11 @@ def wallpaper_is_dark(wallpaper, palette):
                 count += 1
         return total / count / 255 < 0.42
     except Exception:
-        return relative_luminance(palette["background"]) < 0.2
+        return relative_luminance(background) < 0.2
 
 
 def login_colors(palette, wallpaper):
-    if wallpaper and wallpaper_is_dark(wallpaper, palette):
+    if wallpaper and wallpaper_is_dark(wallpaper, palette["background"]):
         text = mix_hex(palette["foreground"], "#ffffff", 0.2)
         base = mix_hex(palette["background"], "#000000", 0.25)
         return {
