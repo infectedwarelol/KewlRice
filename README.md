@@ -16,6 +16,8 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 
 ![App launcher](screenshots/launcher.png)
 
+![Alt+Tab spinning the globe of open apps](screenshots/alttab.gif)
+
 The wallpaper in the screenshots isn't included, so pick your own.
 
 ## What you get
