@@ -1,72 +1,141 @@
 {
-    "height": 30,
-    "spacing": 4,
+    "layer": "top",
+    "position": "top",
+    "height": 38,
+    "margin-top": 6,
+    "margin-left": 10,
+    "margin-right": 10,
+    "spacing": 0,
     "modules-left": [
-        "clock"
-    ],
-    "modules-center": [
-        "hyprland/window"
+        "custom/logo",
+        "group/controls"
     ],
     "modules-right": [
-        "idle_inhibitor",
-        "pulseaudio",
-        "cpu",
-        "memory",
-        "temperature",
-        "tray",
-        "custom/control"
+        "group/status"
     ],
-    "hyprland/window": {
-        "max-length": 60,
-        "separate-outputs": true
+    "group/controls": {
+        "orientation": "horizontal",
+        "modules": [
+            "custom/control",
+            "pulseaudio",
+            "custom/media-previous",
+            "custom/media-play",
+            "custom/media-next"
+        ]
     },
-    "idle_inhibitor": {
-        "format": "{icon}",
-        "format-icons": {
-            "activated": "",
-            "deactivated": ""
-        }
+    "group/status": {
+        "orientation": "horizontal",
+        "modules": [
+            "tray",
+            "idle_inhibitor",
+            "network",
+            "cpu",
+            "memory",
+            "temperature",
+            "custom/device-battery",
+            "clock",
+            "custom/power"
+        ]
     },
-    "pulseaudio": {
-        "format": "{volume}% {icon} {format_source}",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
-        "format-source": "{volume}% ",
-        "format-source-muted": "",
-        "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
-        },
-        "on-click": "pkill -x pavucontrol || pavucontrol -t 1",
-    },
-    "cpu": {
-        "format": "{usage}% ",
-        "tooltip": false
-    },
-    "memory": {
-        "format": "{}% "
-    },
-    "temperature": {
-        "critical-threshold": 80,
-        "format": "{temperatureC}°C {icon}",
-        "format-icons": ["", "", ""]
-    },
-    "clock": {
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-        "format-alt": "{:%Y-%m-%d}"
-    },
-    "tray": {
-        "spacing": 10,
+    "custom/logo": {
+        "format": "",
+        "align": 0.5,
+        "justify": "center",
+        "tooltip-format": "App launcher",
+        "on-click": "~/.config/hypr/launcher.sh"
     },
     "custom/control": {
         "format": "󰒓",
         "tooltip-format": "Control center",
         "on-click": "~/.config/hypr/control-center/control_center.py"
+    },
+    "pulseaudio": {
+        "format": "{icon}",
+        "format-bluetooth": "{icon}",
+        "format-muted": "󰝟",
+        "format-icons": {
+            "headphone": "󰋋",
+            "headset": "󰋎",
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
+        "tooltip-format": "Volume {volume}%",
+        "scroll-step": 5,
+        "on-click": "pkill -x pavucontrol || pavucontrol -t 1",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+    },
+    "custom/media-previous": {
+        "format": "󰒮",
+        "tooltip": false,
+        "on-click": "playerctl previous"
+    },
+    "custom/media-play": {
+        "exec": "bash ~/.config/waybar/media-status.sh",
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "Playing": "󰏤",
+            "Paused": "󰐊",
+            "Stopped": "󰐊"
+        },
+        "on-click": "playerctl play-pause"
+    },
+    "custom/media-next": {
+        "format": "󰒭",
+        "tooltip": false,
+        "on-click": "playerctl next"
+    },
+    "tray": {
+        "icon-size": 15,
+        "spacing": 8
+    },
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "󰅶",
+            "deactivated": "󰾪"
+        },
+        "tooltip-format-activated": "Staying awake",
+        "tooltip-format-deactivated": "Sleep allowed"
+    },
+    "network": {
+        "format-ethernet": "󰈀",
+        "format-wifi": "󰖩",
+        "format-disconnected": "󰖪",
+        "tooltip-format-ethernet": "{ifname}  {ipaddr}",
+        "tooltip-format-wifi": "{essid}  {signalStrength}%",
+        "tooltip-format-disconnected": "Offline"
+    },
+    "cpu": {
+        "format": "󰻠 {usage}%",
+        "tooltip": false
+    },
+    "memory": {
+        "format": "󰍛 {}%"
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "󰔏 {temperatureC}°"
+    },
+    "custom/device-battery": {
+        "exec": "bash ~/.config/waybar/device-battery.sh",
+        "return-type": "json",
+        "interval": 60,
+        "format": "{icon} {text}",
+        "format-icons": {
+            "headset": "󰋎",
+            "mouse": "󰍽",
+            "keyboard": "󰌌",
+            "default": "󰂄"
+        }
+    },
+    "clock": {
+        "format": "󰥔 {:%H:%M}",
+        "format-alt": "󰃭 {:%a %d %b}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "custom/power": {
+        "format": "󰐥",
+        "tooltip-format": "Power menu",
+        "on-click": "~/.config/hypr/power-menu/power_menu.py"
     }
 }

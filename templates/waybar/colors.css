@@ -1,2 +1,6 @@
 @define-color kewl_foreground {{foreground}};
+@define-color kewl_background {{background}};
+@define-color kewl_surface {{surface}};
+@define-color kewl_primary {{primary}};
+@define-color kewl_accent {{accent}};
 @define-color kewl_urgent {{urgent}};

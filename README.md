@@ -28,7 +28,7 @@ The wallpaper in the screenshots isn't included, so pick your own.
 
 ## What you get
 
-- Waybar at the top, fully transparent, with the clock on the left (click it to see the date, hover for a calendar)
+- A floating Waybar at the top made of rounded pills in your theme's colors: the Arch logo (opens the launcher), control center, volume and media buttons on the left, and tray, network, CPU, memory, temperature, headset battery, clock (click for the date, hover for a calendar) and power on the right
 - Every app see-through at 80%, and new apps you install get it too
 - Kitty and Konsole with a purple background and clear text, and btop and cmatrix see-through in kitty too. cmatrix rains in your theme's accent color
 - A launcher on Super+R (press it again to close it)
@@ -215,7 +215,7 @@ The new theme shows up in the Super + Tab menu right away. The files in `templat
 
 - Super + L locks the screen: your wallpaper blurred, a big clock, the date and the song that's playing.
 - Super + Esc opens the power menu. Log out, restart and shut down ask you to press a second time so you can't hit them by accident. Each one has its own sound.
-- The button at the right end of the bar opens the control center: volume and microphone, network, do not disturb, the song that's playing with its cover and controls, and lock and power buttons.
+- The gear button at the left of the bar opens the control center: volume and microphone, network, do not disturb, the song that's playing with its cover and controls, and lock and power buttons.
 - The login screen, the lock screen, the power menu and the control center all follow the theme you picked last, by themselves.
 
 ## Changing things

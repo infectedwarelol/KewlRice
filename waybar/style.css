@@ -1,38 +1,136 @@
-@import url("file:///etc/xdg/waybar/style.css");
 @import url("colors.css");
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans Symbols 2", "Noto Sans", sans-serif;
+    font-size: 13px;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+}
 
 window#waybar {
     background-color: transparent;
-    border-bottom: none;
     color: @kewl_foreground;
 }
 
-#workspaces button.focused, #workspaces button.active,
-#clock, #cpu, #memory, #temperature, #pulseaudio, #pulseaudio.muted,
-#tray, #idle_inhibitor, #custom-control {
-    background-color: transparent;
+tooltip {
+    background-color: alpha(@kewl_background, 0.95);
+    border: 1px solid alpha(@kewl_accent, 0.35);
+    border-radius: 12px;
+}
+
+tooltip label {
     color: @kewl_foreground;
 }
 
-#workspaces button.focused, #workspaces button.active {
-    background-color: rgba(255, 255, 255, 0.12);
+#custom-logo,
+#controls,
+#status {
+    background-color: alpha(@kewl_background, 0.72);
+    border: 1px solid alpha(@kewl_foreground, 0.08);
+    border-radius: 999px;
 }
 
-#workspaces button:hover, #pulseaudio:hover, #idle_inhibitor.activated, #custom-control:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+#custom-logo {
+    min-width: 33px;
+    margin-right: 6px;
+    padding: 0 5px 0 0;
+    font-size: 17px;
+    color: @kewl_accent;
+}
+
+#custom-logo:hover {
+    background-color: alpha(@kewl_accent, 0.25);
+}
+
+#controls,
+#status {
+    padding: 0 6px;
+}
+
+#custom-control,
+#pulseaudio,
+#custom-media-previous,
+#custom-media-play,
+#custom-media-next,
+#custom-power {
+    min-width: 26px;
+    padding: 0 3px;
+    margin: 5px 1px;
+    border-radius: 999px;
+    color: alpha(@kewl_foreground, 0.85);
+    font-size: 14px;
+}
+
+#custom-control:hover,
+#pulseaudio:hover,
+#custom-media-previous:hover,
+#custom-media-play:hover,
+#custom-media-next:hover,
+#custom-power:hover {
+    background-color: alpha(@kewl_accent, 0.25);
     color: @kewl_foreground;
 }
 
-#pulseaudio.muted {
-    color: alpha(@kewl_foreground, 0.5);
+#pulseaudio.muted,
+#custom-media-play.stopped {
+    color: alpha(@kewl_foreground, 0.4);
 }
 
-#temperature.critical, #workspaces button.urgent, #tray > .needs-attention {
-    background-color: transparent;
+#custom-media-play.playing {
+    color: @kewl_accent;
+}
+
+#tray,
+#idle_inhibitor,
+#network,
+#cpu,
+#memory,
+#temperature,
+#custom-device-battery,
+#clock {
+    margin: 6px 2px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background-color: alpha(@kewl_surface, 0.75);
+    border: 1px solid alpha(@kewl_foreground, 0.08);
+    color: alpha(@kewl_foreground, 0.9);
+    font-size: 12px;
+}
+
+#idle_inhibitor,
+#network {
+    min-width: 24px;
+    padding: 0 3px;
+}
+
+#idle_inhibitor.activated {
+    background-color: alpha(@kewl_accent, 0.7);
+    color: @kewl_background;
+}
+
+#network.disconnected,
+#temperature.critical,
+#custom-device-battery.low {
     color: @kewl_urgent;
 }
 
-#custom-control {
-    padding: 0 10px;
-    font-size: 15px;
+#custom-device-battery.charging {
+    color: @kewl_accent;
+}
+
+#clock {
+    font-weight: bold;
+}
+
+#tray > .needs-attention {
+    background-color: alpha(@kewl_urgent, 0.4);
+    border-radius: 999px;
+}
+
+#custom-power {
+    margin-left: 4px;
+    color: @kewl_urgent;
 }
