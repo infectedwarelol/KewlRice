@@ -32,7 +32,12 @@ def icon_path(layout_index, zones):
     os.makedirs(ICON_DIR, exist_ok=True)
     path = os.path.join(ICON_DIR, f"layout-{layout_index}.svg")
     content = draw(zones)
-    if not os.path.exists(path) or open(path).read() != content:
-        with open(path, "w") as f:
-            f.write(content)
+    try:
+        with open(path) as existing:
+            unchanged = existing.read() == content
+    except OSError:
+        unchanged = False
+    if not unchanged:
+        with open(path, "w") as icon_file:
+            icon_file.write(content)
     return path

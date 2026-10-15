@@ -17,7 +17,8 @@ def clear_presses():
 
 def presses_since(since):
     try:
-        times = [float(t) for t in open(PRESSES_FILE).read().split()]
+        with open(PRESSES_FILE) as presses:
+            times = [float(t) for t in presses.read().split()]
     except (OSError, ValueError):
         return []
     return [t for t in times if t > since]

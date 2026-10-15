@@ -147,6 +147,7 @@ class PlanetSwitcher:
         self.tabs_pressed = tabs_pressed
         self.alt_released = alt_released
         self.offset = 0
+        self.tab_count = max(1, tabs_pressed())
         self.choice = None
         self.colors, theme_name = load_active_theme()
         self.rgb = {key: hex_to_rgb(value) for key, value in self.colors.items()}
@@ -263,7 +264,7 @@ class PlanetSwitcher:
         self.area = area
 
     def tab_index(self):
-        return max(1, self.tabs_pressed()) % self.count
+        return self.tab_count % self.count
 
     def selected_index(self):
         return (self.tab_index() + self.offset) % self.count
@@ -294,8 +295,10 @@ class PlanetSwitcher:
     def tick(self, elapsed=1 / 60):
         if self.choice is not None or self.alt_released():
             if self.choice is None:
+                self.tab_count = max(1, self.tabs_pressed())
                 self.finish(self.selected_index())
             return False
+        self.tab_count = max(1, self.tabs_pressed())
         selected = self.selected_index()
         changed = selected != self.last_selected
         turn = 1 - math.exp(-TURN_RATE * elapsed)
