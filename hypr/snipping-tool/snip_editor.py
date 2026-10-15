@@ -56,13 +56,23 @@ def blurred_region(image, rect):
     return small.scale_simple(w, h, GdkPixbuf.InterpType.BILINEAR), x, y
 
 
+def blurred_surface(item, image):
+    cached = item.get("blur_cache")
+    if cached and cached[0] is image and cached[1] == item["rect"]:
+        return cached[2:]
+    blurred, x, y = blurred_region(image, item["rect"])
+    surface = Gdk.cairo_surface_create_from_pixbuf(blurred, 1, None) if blurred else None
+    item["blur_cache"] = (image, item["rect"], surface, x, y)
+    return surface, x, y
+
+
 def draw_item(cr, item, image):
     if item["tool"] != "blur":
         draw_stroke(cr, item)
         return
-    blurred, x, y = blurred_region(image, item["rect"])
+    blurred, x, y = blurred_surface(item, image)
     if blurred:
-        Gdk.cairo_set_source_pixbuf(cr, blurred, x, y)
+        cr.set_source_surface(blurred, x, y)
         cr.rectangle(x, y, blurred.get_width(), blurred.get_height())
         cr.fill()
 
@@ -100,6 +110,7 @@ class SnipEditor(Gtk.Window):
         self.set_default_size(1100, 720)
         self.on_new = on_new
         self.image = None
+        self.cached_surface = None
         self.strokes = []
         self.history = []
         self.future = []
@@ -332,11 +343,16 @@ class SnipEditor(Gtk.Window):
     def to_image(self, x, y):
         return x / self.zoom, y / self.zoom
 
+    def image_surface(self):
+        if self.cached_surface is None or self.cached_surface[0] is not self.image:
+            self.cached_surface = (self.image, Gdk.cairo_surface_create_from_pixbuf(self.image, 1, None))
+        return self.cached_surface[1]
+
     def on_draw(self, _widget, cr):
         if not self.image:
             return False
         cr.scale(self.zoom, self.zoom)
-        Gdk.cairo_set_source_pixbuf(cr, self.image, 0, 0)
+        cr.set_source_surface(self.image_surface(), 0, 0)
         cr.paint()
         for item in self.strokes + ([self.drawing] if self.drawing else []):
             draw_item(cr, item, self.image)

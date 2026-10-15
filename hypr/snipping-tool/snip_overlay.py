@@ -34,6 +34,8 @@ class SnipOverlay(Gtk.Window):
         self.hover = None
         self.finished = False
         self.mode_buttons = {}
+        self.screenshot_surface = Gdk.cairo_surface_create_from_pixbuf(screenshot, 1, None)
+        self.dimmed_surface = self.dim(self.screenshot_surface)
 
         layers = Gtk.Overlay()
         self.add(layers)
@@ -97,10 +99,19 @@ class SnipOverlay(Gtk.Window):
             return True
         return False
 
-    def paint_screenshot(self, cr):
+    def dim(self, surface):
+        dimmed = surface.create_similar(cairo.CONTENT_COLOR_ALPHA, surface.get_width(), surface.get_height())
+        cr = cairo.Context(dimmed)
+        cr.set_source_surface(surface, 0, 0)
+        cr.paint()
+        cr.set_source_rgba(0, 0, 0, 0.45)
+        cr.paint()
+        return dimmed
+
+    def paint_screenshot(self, cr, surface):
         cr.save()
         cr.scale(1 / self.factor, 1 / self.factor)
-        Gdk.cairo_set_source_pixbuf(cr, self.screenshot, 0, 0)
+        cr.set_source_surface(surface, 0, 0)
         cr.paint()
         cr.restore()
 
@@ -121,14 +132,12 @@ class SnipOverlay(Gtk.Window):
         return False
 
     def on_draw(self, _widget, cr):
-        self.paint_screenshot(cr)
-        cr.set_source_rgba(0, 0, 0, 0.45)
-        cr.paint()
+        self.paint_screenshot(cr, self.dimmed_surface)
         cr.save()
         if self.selection_path(cr):
             path = cr.copy_path()
             cr.clip()
-            self.paint_screenshot(cr)
+            self.paint_screenshot(cr, self.screenshot_surface)
             cr.restore()
             cr.new_path()
             cr.append_path(path)
@@ -162,11 +171,16 @@ class SnipOverlay(Gtk.Window):
 
     def on_motion(self, _widget, event):
         if self.mode == "window":
-            self.hover = self.window_at(event.x, event.y)
+            hover = self.window_at(event.x, event.y)
+            if hover == self.hover:
+                return True
+            self.hover = hover
         elif self.start:
             self.current = (event.x, event.y)
             if self.mode == "freeform":
                 self.points.append((event.x, event.y))
+        else:
+            return True
         self.area.queue_draw()
         return True
 
@@ -208,7 +222,7 @@ class SnipOverlay(Gtk.Window):
             cr.line_to(x * self.factor - px, y * self.factor - py)
         cr.close_path()
         cr.clip()
-        Gdk.cairo_set_source_pixbuf(cr, self.screenshot, -px, -py)
+        cr.set_source_surface(self.screenshot_surface, -px, -py)
         cr.paint()
         return Gdk.pixbuf_get_from_surface(surface, 0, 0, pw, ph)
 
