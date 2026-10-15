@@ -13,6 +13,7 @@ LOCK_FILE = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-clipbo
 DATABASE_PATH = os.environ.get("KEWL_CLIPBOARD_DB")
 MAX_ENTRIES = 50
 PREVIEW_LENGTH = 90
+THUMBNAIL_SIZE = 256
 TERMINAL_CLASSES = {"kitty", "org.kde.konsole", "alacritty", "foot", "com.mitchellh.ghostty", "wezterm"}
 IMAGE_PATTERN = re.compile(r"^\[\[ binary data .+? (\w+) (\d+)x(\d+) \]\]$")
 EXIT_SELECTED = 0
@@ -37,32 +38,56 @@ def load_entries():
     return entries
 
 
-def thumbnail_for(entry, extension):
+def scaled_thumbnail(image):
+    try:
+        import gi
+        gi.require_version("GdkPixbuf", "2.0")
+        from gi.repository import GdkPixbuf
+        loader = GdkPixbuf.PixbufLoader()
+        loader.write(image)
+        loader.close()
+        pixbuf = loader.get_pixbuf()
+        width, height = pixbuf.get_width(), pixbuf.get_height()
+        scale = min(1.0, THUMBNAIL_SIZE / max(width, height))
+        if scale < 1.0:
+            pixbuf = pixbuf.scale_simple(max(1, round(width * scale)), max(1, round(height * scale)), GdkPixbuf.InterpType.BILINEAR)
+        _, data = pixbuf.save_to_bufferv("png", [], [])
+        return data
+    except Exception:
+        return image
+
+
+def thumbnail_for(entry):
     os.makedirs(THUMBNAIL_DIR, exist_ok=True)
-    path = os.path.join(THUMBNAIL_DIR, f"{entry['id']}.{extension}")
+    path = os.path.join(THUMBNAIL_DIR, f"{entry['id']}.thumb.png")
     if not os.path.exists(path):
         image = cliphist("decode", data=entry["line"].encode()).stdout
         if not image:
             return None
-        with open(path, "wb") as thumbnail:
-            thumbnail.write(image)
+        temporary = f"{path}.{os.getpid()}"
+        with open(temporary, "wb") as thumbnail:
+            thumbnail.write(scaled_thumbnail(image))
+        os.replace(temporary, path)
     return path
 
 
 def remove_stale_thumbnails(entries):
     if not os.path.isdir(THUMBNAIL_DIR):
         return
-    kept = {entry["id"] for entry in entries}
+    kept = {f"{entry['id']}.thumb.png" for entry in entries}
     for name in os.listdir(THUMBNAIL_DIR):
-        if name.split(".")[0] not in kept:
-            os.remove(os.path.join(THUMBNAIL_DIR, name))
+        if name not in kept:
+            try:
+                os.remove(os.path.join(THUMBNAIL_DIR, name))
+            except OSError:
+                pass
 
 
 def menu_row(entry):
     image = IMAGE_PATTERN.match(entry["preview"].strip())
     if image:
-        extension, width, height = image.groups()
-        thumbnail = thumbnail_for(entry, extension)
+        _, width, height = image.groups()
+        thumbnail = thumbnail_for(entry)
         label = f"Image  {width} x {height}"
         return f"{label}\0icon\x1f{thumbnail}" if thumbnail else label, True
     text = " ".join(entry["preview"].split())

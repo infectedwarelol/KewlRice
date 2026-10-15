@@ -30,7 +30,7 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/brave-video/brave_video.py")
     hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
     hl.exec_cmd("wl-clip-persist --clipboard regular")
-    hl.exec_cmd("wl-paste --watch cliphist store")
+    hl.exec_cmd("wl-paste --watch cliphist -max-items 100 store")
 end)
 
 hl.env("XCURSOR_SIZE", "24")
