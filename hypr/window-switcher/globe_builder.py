@@ -6,9 +6,11 @@ import json
 import math
 import os
 import random
+import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import cairo
@@ -31,6 +33,8 @@ LAND_FILE = GEODATA_DIR / "ne_50m_land.geojson"
 PLACES_FILE = GEODATA_DIR / "ne_50m_populated_places_simple.geojson"
 THEME_SWITCH_DIR = Path(__file__).resolve().parent.parent / "theme-switch"
 RENDERER_SOURCE = Path(__file__).resolve().parent / "globe_render.c"
+GLOBE_DIRECTORY_NAME = re.compile(r"[0-9a-f]{16}")
+STALE_STAGING_SECONDS = 3600
 WHITE = (1.0, 1.0, 1.0)
 BLACK = (0.0, 0.0, 0.0)
 
@@ -285,27 +289,66 @@ def load_renderer():
 
 def build(colors):
     directory = cache_dir(colors)
-    if is_ready(directory):
+    library_missing = not renderer_library_path().is_file()
+    if is_ready(directory) and not library_missing:
         return directory
-    if not geodata_available():
+    if not is_ready(directory) and not geodata_available():
         raise RuntimeError(f"map data missing in {GEODATA_DIR}")
     compile_renderer()
     GLOBE_ROOT.mkdir(parents=True, exist_ok=True)
     with open(GLOBE_ROOT / ".build.lock", "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        if is_ready(directory):
-            return directory
-        staging = GLOBE_ROOT / f".{directory.name}.{os.getpid()}"
-        shutil.rmtree(staging, ignore_errors=True)
-        staging.mkdir()
-        try:
-            build_texture(colors, texture_path(staging))
-            (staging / "ready").write_text("ok\n")
-            shutil.rmtree(directory, ignore_errors=True)
-            staging.rename(directory)
-        finally:
+        if not is_ready(directory):
+            staging = GLOBE_ROOT / f".{directory.name}.{os.getpid()}"
             shutil.rmtree(staging, ignore_errors=True)
+            staging.mkdir()
+            try:
+                build_texture(colors, texture_path(staging))
+                (staging / "ready").write_text("ok\n")
+                shutil.rmtree(directory, ignore_errors=True)
+                staging.rename(directory)
+            finally:
+                shutil.rmtree(staging, ignore_errors=True)
+        prune_cache(directory)
     return directory
+
+
+def wanted_directories():
+    sys.path.insert(0, str(THEME_SWITCH_DIR))
+    import theme_switch
+    wanted = set()
+    for name in theme_switch.available_themes():
+        try:
+            _, palette = theme_switch.load_palette(name)
+        except theme_switch.ThemeError:
+            continue
+        wanted.add(cache_dir({key: palette[key] for key in COLOR_KEYS}).name)
+    return wanted
+
+
+def prune_cache(current):
+    try:
+        wanted = wanted_directories()
+    except Exception:
+        return
+    if not wanted:
+        return
+    wanted.add(current.name)
+    library = renderer_library_path().name
+    now = time.time()
+    for entry in GLOBE_ROOT.iterdir():
+        name = entry.name
+        try:
+            if entry.is_dir() and GLOBE_DIRECTORY_NAME.fullmatch(name) and name not in wanted:
+                shutil.rmtree(entry, ignore_errors=True)
+            elif entry.is_dir() and name.startswith(".") and now - entry.stat().st_mtime > STALE_STAGING_SECONDS:
+                shutil.rmtree(entry, ignore_errors=True)
+            elif entry.is_file() and name.startswith("libglobe-") and name.endswith(".so") and name != library:
+                entry.unlink(missing_ok=True)
+            elif entry.is_file() and name.startswith(".libglobe-") and now - entry.stat().st_mtime > STALE_STAGING_SECONDS:
+                entry.unlink(missing_ok=True)
+        except OSError:
+            continue
 
 
 def theme_colors(name=None):
