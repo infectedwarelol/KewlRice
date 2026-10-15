@@ -4,19 +4,25 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 
 ## Screenshots
 
-![Desktop](screenshots/desktop.png)
+| Desktop | Terminal |
+| --- | --- |
+| ![Desktop](screenshots/desktop.png) | ![Terminal opening with the spinning Arch logo](screenshots/terminal-spin.gif) |
+| **Launcher** | **Alt+Tab** |
+| ![App launcher](screenshots/launcher.png) | ![Alt+Tab spinning the globe of open apps](screenshots/alttab.gif) |
 
-![Terminal opening with the spinning Arch logo](screenshots/terminal-spin.gif)
+These are in the `slate` theme. Here are all five with cmatrix, fastfetch and btop:
 
-![Terminal with fastfetch](screenshots/terminal.png)
+![All five themes with cmatrix, fastfetch and btop](screenshots/themes.gif)
 
-![Tiled windows with cmatrix](screenshots/tiled.gif)
+| default | burgundy | arctic |
+| --- | --- | --- |
+| ![default](screenshots/themes/default.gif) | ![burgundy](screenshots/themes/burgundy.gif) | ![arctic](screenshots/themes/arctic.gif) |
+| ![default](screenshots/themes/default.png) | ![burgundy](screenshots/themes/burgundy.png) | ![arctic](screenshots/themes/arctic.png) |
 
-![Terminal, cmatrix and Dolphin side by side](screenshots/tiled.png)
-
-![App launcher](screenshots/launcher.png)
-
-![Alt+Tab spinning the globe of open apps](screenshots/alttab.gif)
+| slate | meadow |
+| --- | --- |
+| ![slate](screenshots/themes/slate.gif) | ![meadow](screenshots/themes/meadow.gif) |
+| ![slate](screenshots/themes/slate.png) | ![meadow](screenshots/themes/meadow.png) |
 
 The wallpaper in the screenshots isn't included, so pick your own.
 
@@ -187,19 +193,7 @@ In the Super + A view you can hold Super and drag an app with the left mouse but
 
 ## Themes
 
-![All five themes with cmatrix, fastfetch and btop](screenshots/themes.gif)
-
 Press Super + Tab to pick a theme. The colors of the borders, bar, launcher, Alt+Tab menu, clipboard, terminal, prompt, cmatrix, notifications, snipping tool and GTK apps change right away, and so does the wallpaper. The theme you pick stays after a reboot.
-
-| default | burgundy | arctic |
-| --- | --- | --- |
-| ![default](screenshots/themes/default.gif) | ![burgundy](screenshots/themes/burgundy.gif) | ![arctic](screenshots/themes/arctic.gif) |
-| ![default](screenshots/themes/default.png) | ![burgundy](screenshots/themes/burgundy.png) | ![arctic](screenshots/themes/arctic.png) |
-
-| slate | meadow |
-| --- | --- |
-| ![slate](screenshots/themes/slate.gif) | ![meadow](screenshots/themes/meadow.gif) |
-| ![slate](screenshots/themes/slate.png) | ![meadow](screenshots/themes/meadow.png) |
 
 You can also switch from a terminal:
 
