@@ -122,7 +122,7 @@
     "custom/memory": {
         "exec": "~/.config/waybar/memory.sh",
         "return-type": "json",
-        "interval": 5,
+        "interval": 3,
         "format": "󰍛 {}"
     },
     "temperature": {
