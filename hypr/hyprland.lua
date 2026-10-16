@@ -192,7 +192,9 @@ hl.bind(mainMod .. " + F", ToggleFullscreen)
 hl.bind(mainMod .. " + N",         hl.dsp.window.move({ workspace = "special:minimized", follow = false }))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))
 
-hl.bind("F11", ToggleFullscreen)
+local fullscreenKeycode = 95
+local fullscreenPending  = false
+hl.bind("F11", function() fullscreenPending = true end)
 
 local showDesktopState = nil
 local showDesktopMuted = false
@@ -517,6 +519,10 @@ hl.on("input.keyboard.key", function(keycode, _, state)
         end
     elseif state == 0 and keycode == repeatingKeycode then
         stopTerminalKeyRepeat()
+    end
+    if fullscreenPending and keycode == fullscreenKeycode and state == 0 then
+        fullscreenPending = false
+        ToggleFullscreen()
     end
     if keycode == 64 and state == 0 then
         local released = io.open(os.getenv("XDG_RUNTIME_DIR") .. "/alttab-released", "w")
