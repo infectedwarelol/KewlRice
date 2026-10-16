@@ -1,41 +1,56 @@
 # KewlRice
 
-My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the colors are purple, and there's a little sound when apps open and close. Alt+Tab shows your open apps on a little planet.
+My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, there are 13 themes that recolor the whole desktop (with their own wallpaper, sounds and terminal frame), little sounds when apps open and close, and Alt+Tab shows your open apps on a spinning planet.
 
 ## Screenshots
 
 | Desktop | Terminal |
 | --- | --- |
-| ![Desktop](screenshots/desktop.png) | ![Terminal opening with the spinning Arch logo](screenshots/terminal-spin.gif) |
+| ![Desktop with three terminals in their themed frames](screenshots/desktop.png) | ![Terminal opening with the spinning Arch logo](screenshots/terminal-spin.gif) |
 | **Launcher** | **Alt+Tab** |
 | ![App launcher](screenshots/launcher.png) | ![Alt+Tab spinning the globe of open apps](screenshots/alttab.gif) |
+| **Music player and calendar** | **Switching themes** |
+| ![Music player and calendar popups from the bar](screenshots/popups.png) | ![The screen sweeping over to a new theme](screenshots/theme-switch.gif) |
 
-These are in the `slate` theme. Here are all five with cmatrix, fastfetch and btop:
+These are in the `daydream` theme. Here are all 13:
 
-![All five themes with cmatrix, fastfetch and btop](screenshots/themes.gif)
+![All 13 themes](screenshots/themes.gif)
 
-| default | burgundy | arctic |
-| --- | --- | --- |
-| ![default](screenshots/themes/default.gif) | ![burgundy](screenshots/themes/burgundy.gif) | ![arctic](screenshots/themes/arctic.gif) |
-| ![default](screenshots/themes/default.png) | ![burgundy](screenshots/themes/burgundy.png) | ![arctic](screenshots/themes/arctic.png) |
+| default | burgundy | arctic | slate |
+| --- | --- | --- | --- |
+| ![default](screenshots/themes/default.jpg) | ![burgundy](screenshots/themes/burgundy.jpg) | ![arctic](screenshots/themes/arctic.jpg) | ![slate](screenshots/themes/slate.jpg) |
+| **meadow** | **stardust** | **highland** | **ember** |
+| ![meadow](screenshots/themes/meadow.jpg) | ![stardust](screenshots/themes/stardust.jpg) | ![highland](screenshots/themes/highland.jpg) | ![ember](screenshots/themes/ember.jpg) |
+| **dusk** | **lilac** | **citypop** | **blush** |
+| ![dusk](screenshots/themes/dusk.jpg) | ![lilac](screenshots/themes/lilac.jpg) | ![citypop](screenshots/themes/citypop.jpg) | ![blush](screenshots/themes/blush.jpg) |
+| **daydream** | | | |
+| ![daydream](screenshots/themes/daydream.jpg) | | | |
 
-| slate | meadow |
-| --- | --- |
-| ![slate](screenshots/themes/slate.gif) | ![meadow](screenshots/themes/meadow.gif) |
-| ![slate](screenshots/themes/slate.png) | ![meadow](screenshots/themes/meadow.png) |
+Every theme draws its own frame around terminal windows:
 
-The wallpaper in the screenshots isn't included, so pick your own.
+![The terminal frame of every theme](screenshots/frames.png)
+
+And the Alt+Tab planet in every theme, by day and by night:
+
+![The Alt+Tab globe in every theme, day and night](screenshots/alttab-themes.jpg)
+
+The wallpapers in the screenshots aren't included, so pick your own.
 
 ## What you get
 
-- A floating Waybar at the top made of rounded pills in your theme's colors: the Arch logo (opens the launcher), control center, volume and media buttons on the left, and tray, network, CPU, memory, temperature, headset battery, clock (click for the date, hover for a calendar) and power on the right
+- A floating Waybar at the top made of rounded pills in your theme's colors:
+  - Left: the Arch logo (opens the launcher), control center, volume and media buttons, and a now playing pill with the album cover, song, artist and a progress bar. Click it for a bigger player with the cover, a seek bar and controls
+  - Middle: the time with seconds, the date and the weather. Click it for a calendar
+  - Right: tray, network, CPU, RAM in Mb or Gb, temperature, headset battery (turns yellow, then red as it runs low) and power
+- 13 themes on Super+Tab. Each one changes the colors everywhere, the wallpaper, the sounds and the frame drawn around your terminals. The whole screen sweeps over to the new look with a soft chime
 - Every app see-through at 80%, and new apps you install get it too
-- Kitty and Konsole with a purple background and clear text, and btop and cmatrix see-through in kitty too. cmatrix rains in your theme's accent color
+- Kitty and Konsole see-through in your theme's colors, with btop and cmatrix see-through too. cmatrix rains in your theme's accent color
+- A decorated frame around every terminal window, different for each theme (neon, gothic, frost, sci-fi, vines, constellations, celtic, flames, art deco, synthwave, retro, ribbons and an ornate one), even in fullscreen
 - A launcher on Super+R (press it again to close it)
-- An Alt+Tab switcher where your open apps sit on a glowing Earth in your theme's colors (real coastlines, relief, clouds, shiny oceans and a soft atmosphere) floating in a starfield, with Mac style app icons. Keep tapping Tab to spin it, it goes round forever, and it slowly turns on its own when you wait. The sun follows the real time of day: sunrise and sunset glow orange, and at night the city lights come on ([every theme, day and night](screenshots/alttab-themes.jpg))
+- An Alt+Tab switcher where your open apps sit on a glowing Earth in your theme's colors (real coastlines, relief, clouds, shiny oceans and a soft atmosphere) floating in a starfield, with Mac style app icons. Keep tapping Tab to spin it, it goes round forever, and it slowly turns on its own when you wait. The sun follows the real time of day: sunrise and sunset glow orange, and at night the city lights come on. It opens almost instantly
 - A clipboard history on Super+V
 - A sound when an app opens or goes fullscreen, and another when it closes
-- A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace, and it keeps clicking while you hold a key)
+- A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace, and it keeps clicking while you hold a key). Shortcuts like Alt+Tab stay silent
 - Notifications that go away after 5 seconds
 - System apps like Settings and the volume mixer dark and see-through too
 - Brave turns solid on YouTube and whenever a video is playing, so videos look sharp
@@ -43,7 +58,7 @@ The wallpaper in the screenshots isn't included, so pick your own.
 - Steam, Steam games and Minecraft stay solid, so games look the way they should
 - A snipping tool like on Windows, with drawing, blur and crop
 - fastfetch with a spinning Arch logo and a spin sound every time you open a terminal or run it
-- A purple terminal prompt with your name, the folder you are in and the time
+- The fish shell with a pill prompt showing your name, the folder you are in and the time, in the same color as the fastfetch logo
 - French keyboard layout (easy to change, see below)
 
 ## What you need
@@ -53,7 +68,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg
 ```
 
 ## Install
@@ -207,7 +222,25 @@ You can also switch from a terminal:
 ~/.config/hypr/theme-switch/theme_switch.py burgundy
 ```
 
-Five themes come with the rice: `default` (the purple look), `burgundy`, `arctic` (icy blue, with calm crystal chime sounds), `slate` (blue-gray space station, with sonar and console sounds) and `meadow` (light green countryside, with kalimba, marimba and bird sounds). They use `~/.config/hypr/wallpapers/arch-waifu-purple.png`, `burgundy-stairs.png`, `arctic-sky.png`, `slate-station.png` and `meadow-hills.png`. Eight more are wallpaper themes: `stardust`, `highland`, `ember`, `dusk`, `lilac`, `citypop`, `blush` and `daydream`, each using a picture of the same name in that folder (from wallhaven.cc). Every theme draws its own outline around terminal windows (neon, gothic, frost, HUD, vines, constellations, celtic knots, flames, art deco, synthwave, retro, ribbons and daydream's ornate frame), and `daydream` also swaps fastfetch for a dotted bar layout. Switching themes sweeps the whole screen over to the new look. These pictures aren't included, so put your own there or the theme falls back to a plain color.
+13 themes come with the rice, each with its own sounds:
+
+| Theme | Look | Wallpaper in `~/.config/hypr/wallpapers/` |
+|---|---|---|
+| `default` | the purple look, neon frame | `arch-waifu-purple.png` |
+| `burgundy` | deep red, gothic frame | `burgundy-stairs.png` |
+| `arctic` | icy blue, snowflake frame, crystal chimes | `arctic-sky.png` |
+| `slate` | blue-gray space station, sci-fi frame, sonar sounds | `slate-station.png` |
+| `meadow` | green countryside, vine frame, kalimba and birds | `meadow-hills.png` |
+| `stardust` | starry indigo, constellation frame, celesta | `stardust.png` |
+| `highland` | mountain village, celtic frame, flute and lute | `highland.jpg` |
+| `ember` | forest sunset, flame frame, cello and crackling fire | `ember.jpg` |
+| `dusk` | pink beach at dusk, art deco frame, electric piano | `dusk.jpg` |
+| `lilac` | purple Fuji, synthwave frame, darkwave synths | `lilac.jpg` |
+| `citypop` | pink anime city, retro frame, city pop keys | `citypop.jpg` |
+| `blush` | soft pink, ribbon and heart frame, kalimba | `blush.jpg` |
+| `daydream` | pastel clouds, ornate frame, music box, and its own fastfetch layout | `daydream.jpg` |
+
+The pictures aren't included, so put your own there with those names or the theme falls back to a plain color.
 
 To add a theme, make a folder in `~/.config/kewlrice/themes/` with two files:
 
@@ -233,5 +266,6 @@ The new theme shows up in the Super + Tab menu right away. The files in `templat
 - The login and terminal sounds: swap `~/.config/hypr/sounds/login.mp3`, `terminal-open.mp3` and `terminal-ready.mp3`.
 - The typing sounds: swap `~/.config/hypr/sounds/keys/terminal-key.wav` and `terminal-backspace.wav`.
 - The spin sound: swap `~/.config/hypr/sounds/spin.wav`.
+- The theme switch chime: swap `~/.config/hypr/sounds/theme-switch.mp3`.
 - Apps that stay solid: add their class to the `negative:` list next to the `opacity` rule in `hyprland.lua`. Run `hyprctl clients` to find an app's class.
 - Kitty and Konsole stay out of the see-through rule because they already make only their background see-through, so the text stays sharp.
