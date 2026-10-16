@@ -1,4 +1,5 @@
 import ctypes
+import hashlib
 import math
 import os
 import random
@@ -31,6 +32,8 @@ FALLBACK_COLORS = {
 MAC_ICON_THEMES = ("WhiteSur-dark", "WhiteSur")
 FALLBACK_ICON = "application-x-executable"
 ICON_PIXELS = 192
+ICON_CACHE_DIR = globe_builder.CACHE_ROOT / "switcher-icons"
+ICON_CACHE_LIMIT = 200
 MAX_ICON_SIZE = 68
 MIN_ICON_SIZE = 40
 SELECTED_GROWTH = 0.3
@@ -68,6 +71,7 @@ STAR_LAYERS = (
     (768, 26, 0.8, 1.5, 0.9, 0.1, 4),
 )
 NEBULA_SEED = 11
+NEBULA_DOWNSCALE = 8
 STAR_SEED = 23
 EXPOSURE = 1.0
 BLOOM_THRESHOLD = 0.35
@@ -347,36 +351,70 @@ class PlanetSwitcher:
         names = [icon_names.get(window_class), window_class, window_class.split(".")[-1]]
         return [name for index, name in enumerate(names) if name and name not in names[:index]]
 
-    def load_icon(self, window, icon_names):
+    def icon_source(self, window, icon_names):
         candidates = self.icon_candidates(window, icon_names)
         for theme in self.mac_themes:
             for name in candidates:
                 if os.path.isabs(name):
                     continue
-                try:
-                    pixbuf = theme.load_icon(name, self.icon_pixels, Gtk.IconLookupFlags.FORCE_SIZE)
-                except GLib.Error:
-                    continue
-                if pixbuf:
-                    return pixbuf, True
+                info = theme.lookup_icon(name, self.icon_pixels, Gtk.IconLookupFlags.FORCE_SIZE)
+                if info:
+                    return info, True
         default = Gtk.IconTheme.get_default()
         for name in candidates + [FALLBACK_ICON]:
-            try:
-                if os.path.isabs(name):
-                    if os.path.isfile(name):
-                        return GdkPixbuf.Pixbuf.new_from_file_at_scale(name, self.icon_pixels, self.icon_pixels, True), False
-                    continue
-                pixbuf = default.load_icon(name, self.icon_pixels, Gtk.IconLookupFlags.FORCE_SIZE)
-                if pixbuf:
-                    return pixbuf, False
-            except GLib.Error:
+            if os.path.isabs(name):
+                if os.path.isfile(name):
+                    return name, False
                 continue
+            info = default.lookup_icon(name, self.icon_pixels, Gtk.IconLookupFlags.FORCE_SIZE)
+            if info:
+                return info, False
         return None, False
 
+    def load_pixbuf(self, source):
+        try:
+            if isinstance(source, str):
+                return GdkPixbuf.Pixbuf.new_from_file_at_scale(source, self.icon_pixels, self.icon_pixels, True)
+            return source.load_icon() if source else None
+        except GLib.Error:
+            return None
+
+    def icon_cache_path(self, source, native):
+        filename = source if isinstance(source, str) else (source.get_filename() if source else None)
+        if not filename:
+            return None
+        try:
+            modified = os.stat(filename).st_mtime_ns
+        except OSError:
+            return None
+        key = hashlib.sha1(f"{filename}|{modified}|{self.icon_pixels}|{native}".encode()).hexdigest()[:20]
+        return ICON_CACHE_DIR / f"{key}.png"
+
+    def store_icon(self, surface, path):
+        try:
+            ICON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            temporary = path.with_name(f".{path.name}.{os.getpid()}")
+            surface.write_to_png(str(temporary))
+            os.replace(temporary, path)
+            cached = sorted(ICON_CACHE_DIR.glob("*.png"), key=lambda entry: entry.stat().st_mtime)
+            for stale in cached[:-ICON_CACHE_LIMIT]:
+                stale.unlink(missing_ok=True)
+        except (OSError, cairo.Error):
+            pass
+
     def icon_sprite(self, window, icon_names):
-        pixbuf, native = self.load_icon(window, icon_names)
+        source, native = self.icon_source(window, icon_names)
         size = self.icon_pixels
         padding = int(size * 0.12)
+        cache_path = self.icon_cache_path(source, native)
+        if cache_path:
+            try:
+                cached = cairo.ImageSurface.create_from_png(str(cache_path))
+                if cached.get_width() == size + 2 * padding and cached.get_format() == cairo.FORMAT_ARGB32:
+                    return cached, padding
+            except (OSError, cairo.Error):
+                pass
+        pixbuf = self.load_pixbuf(source)
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, size + 2 * padding, size + 2 * padding)
         cr = cairo.Context(surface)
         if native and pixbuf:
@@ -406,6 +444,8 @@ class PlanetSwitcher:
                 cr.paint()
                 cr.restore()
         surface.flush()
+        if cache_path:
+            self.store_icon(surface, cache_path)
         return surface, padding
 
     def bucket_sprite(self, index, device_size):
@@ -511,8 +551,9 @@ class PlanetSwitcher:
 
     def build_backdrop(self, width, height, scale):
         rng = random.Random(NEBULA_SEED)
-        base = device_surface(width, height, scale)
-        cr = cairo.Context(base)
+        nebula = cairo.ImageSurface(cairo.FORMAT_ARGB32, math.ceil(width / NEBULA_DOWNSCALE), math.ceil(height / NEBULA_DOWNSCALE))
+        cr = cairo.Context(nebula)
+        cr.scale(1 / NEBULA_DOWNSCALE, 1 / NEBULA_DOWNSCALE)
         cr.set_source_rgba(*mix(self.rgb["background"], BLACK, 0.5), BACKDROP_ALPHA)
         cr.paint()
         for color, alpha in ((self.rgb["primary"], 0.12), (self.rgb["accent"], 0.08), (self.rgb["secondary"], 0.1)):
@@ -532,6 +573,14 @@ class PlanetSwitcher:
         vignette.add_color_stop_rgba(0, 0, 0, 0, 0)
         vignette.add_color_stop_rgba(1, 0, 0, 0, VIGNETTE_ALPHA)
         cr.set_source(vignette)
+        cr.paint()
+        nebula.flush()
+        base = device_surface(width, height, scale)
+        cr = cairo.Context(base)
+        cr.scale(NEBULA_DOWNSCALE, NEBULA_DOWNSCALE)
+        cr.set_source_surface(nebula, 0, 0)
+        cr.get_source().set_filter(cairo.FILTER_BILINEAR)
+        cr.get_source().set_extend(cairo.EXTEND_PAD)
         cr.paint()
         base.flush()
         self.backdrop_base = base
