@@ -513,6 +513,18 @@ def notify(message):
         subprocess.run(["notify-send", "-a", "Theme switch", "Theme switch failed", message], check=False)
 
 
+def send_to_ui_daemon(message):
+    import socket
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+            connection.settimeout(0.3)
+            connection.connect(os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.sock"))
+            connection.sendall(message.encode())
+        return True
+    except OSError:
+        return False
+
+
 def pick_theme():
     from theme_picker import pick_theme as show_picker
 
@@ -539,6 +551,8 @@ def main(arguments):
         return 0
     if option == "--current":
         print(current_theme() or "")
+        return 0
+    if option == "--menu" and send_to_ui_daemon("menu"):
         return 0
     LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(LOCK_FILE, "w") as lock:

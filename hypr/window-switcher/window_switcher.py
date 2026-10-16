@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import fcntl
+import os
+import socket
 import sys
 import time
 
@@ -14,6 +16,18 @@ from keypress_tracker import (
 )
 
 STALE_PRESS_SECONDS = 2
+UI_SOCKET = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.sock")
+
+
+def send_to_daemon(message):
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+            connection.settimeout(0.3)
+            connection.connect(UI_SOCKET)
+            connection.sendall(message.encode())
+        return True
+    except OSError:
+        return False
 
 
 def print_window_order():
@@ -50,6 +64,8 @@ def main():
 
     pressed_at = float(sys.argv[1]) if len(sys.argv) > 1 else time.time()
     record_press(pressed_at)
+    if send_to_daemon(f"alttab {pressed_at}"):
+        return
     lock = open(LOCK_FILE, "w")
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)

@@ -105,7 +105,7 @@ cp konsole/konsolerc dolphin/dolphinrc ~/.config/
 cp applications/snipping-tool.desktop ~/.local/share/applications/
 cp -r themes templates ~/.config/kewlrice/
 cp -r hypr/sounds ~/.config/kewlrice/sounds
-chmod +x ~/.config/hypr/window-switcher/window_switcher.py
+chmod +x ~/.config/hypr/window-switcher/window_switcher.py ~/.config/hypr/window-switcher/ui_daemon.py
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 chmod +x ~/.config/fastfetch/spinning_logo.py
