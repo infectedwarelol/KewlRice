@@ -38,9 +38,9 @@ def run_switcher(since):
 
     from planet_view import choose_window
 
-    choice = choose_window(windows, icon_names_by_window_class(), tabs_pressed, alt_released)
-    if choice is not None:
-        switch_to_window(windows[choice])
+    choose_window(
+        windows, icon_names_by_window_class(), tabs_pressed, alt_released, lambda choice: switch_to_window(windows[choice])
+    )
 
 
 def main():
