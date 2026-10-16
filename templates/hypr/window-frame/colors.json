@@ -1,0 +1,8 @@
+{
+    "background": "{{background}}",
+    "foreground": "{{foreground}}",
+    "primary": "{{primary}}",
+    "secondary": "{{secondary}}",
+    "accent": "{{accent}}",
+    "urgent": "{{urgent}}"
+}

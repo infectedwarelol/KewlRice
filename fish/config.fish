@@ -20,11 +20,15 @@ function fish_prompt
 end
 
 function fastfetch
+    set -l config
+    if string match -q ornate -- (cat $HOME/.config/kewlrice/style 2>/dev/null)
+        set config -c $HOME/.config/fastfetch/ornate.jsonc
+    end
     if test (count $argv) -eq 0; and isatty stdout
-        python3 $HOME/.config/fastfetch/spinning_logo.py (command fastfetch --pipe false --logo none | string collect) 2>/dev/null
-        or command fastfetch
+        python3 $HOME/.config/fastfetch/spinning_logo.py (command fastfetch $config --pipe false --logo none | string collect) 2>/dev/null
+        or command fastfetch $config
     else
-        command fastfetch $argv
+        command fastfetch $config $argv
     end
 end
 

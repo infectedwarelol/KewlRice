@@ -1,0 +1,41 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+  "logo": {
+    "color": {
+      "1": "1;38;2;{{accent.ansi}}",
+      "2": "38;2;{{primary.ansi}}"
+    }
+  },
+  "display": {
+    "separator": "  ·  ",
+    "key": { "width": 11 },
+    "color": {
+      "keys": "1;38;2;{{urgent.ansi}}",
+      "title": "1;38;2;{{accent.ansi}}",
+      "separator": "38;2;{{primary.ansi}}"
+    },
+    "bar": {
+      "char": { "elapsed": "▬", "total": "-" },
+      "border": null,
+      "color": { "elapsed": "38;2;{{accent.ansi}}", "total": "38;2;{{surface.ansi}}" },
+      "width": 12
+    },
+    "percent": { "type": 2 }
+  },
+  "modules": [
+    { "type": "title", "key": "Host" },
+    { "type": "host", "key": "Machine" },
+    { "type": "os", "key": "Distro" },
+    { "type": "kernel", "key": "OS" },
+    { "type": "wm", "key": "WM" },
+    { "type": "terminal", "key": "Terminal" },
+    { "type": "shell", "key": "Shell" },
+    { "type": "cpu", "key": "CPU" },
+    { "type": "cpuusage", "key": "CPU Load" },
+    { "type": "memory", "key": "Memory" },
+    { "type": "disk", "key": "Disk", "folders": "/" },
+    { "type": "battery", "key": "Battery" },
+    { "type": "display", "key": "Resolution", "compactType": "original" },
+    { "type": "uptime", "key": "Uptime" }
+  ]
+}

@@ -35,6 +35,9 @@ REQUIRED_KEYS = (
     "border_active", "border_inactive",
 ) + tuple(f"color{index}" for index in range(16))
 HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}")
+STYLE_KEYS = {"style": re.compile(r"plain|ornate"), "terminal_padding": re.compile(r"[0-9]{1,2}")}
+STYLE_DEFAULTS = {"style": "plain", "terminal_padding": "0"}
+WINDOW_FRAME = CONFIG_DIR / "hypr" / "window-frame" / "window_frame.py"
 THEME_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 PLACEHOLDER = re.compile(r"\{\{\s*([a-z0-9_]+(?:\|[a-z0-9_]+)*)(?:\.(hex|rgb|ansi))?\s*\}\}")
 USAGE = "usage: theme_switch.py <theme-name> | --menu | --restore | --list | --current"
@@ -82,9 +85,14 @@ def load_palette(name):
         key, value = key.strip(), value.strip()
         if not separator or not key:
             raise ThemeError(f"{palette_file}:{line_number}: expected key=value")
-        if key != "wallpaper" and not HEX_COLOR.fullmatch(value):
+        if key in STYLE_KEYS:
+            if not STYLE_KEYS[key].fullmatch(value):
+                raise ThemeError(f"{palette_file}:{line_number}: {key} has an invalid value {value!r}")
+        elif key != "wallpaper" and not HEX_COLOR.fullmatch(value):
             raise ThemeError(f"{palette_file}:{line_number}: {key} must be #rrggbb, got {value!r}")
         palette[key] = value if key == "wallpaper" else value.lower()
+    for key, value in STYLE_DEFAULTS.items():
+        palette.setdefault(key, value)
     missing = [key for key in REQUIRED_KEYS if key not in palette]
     if missing:
         raise ThemeError(f"{palette_file}: missing keys: {', '.join(missing)}")
@@ -417,6 +425,42 @@ def set_wallpaper(wallpaper, palette):
     return []
 
 
+def window_frame_processes():
+    running = []
+    marker = str(WINDOW_FRAME).encode()
+    for proc_dir in Path("/proc").iterdir():
+        if not proc_dir.name.isdigit():
+            continue
+        try:
+            arguments = (proc_dir / "cmdline").read_bytes().split(b"\0")
+        except OSError:
+            continue
+        if len(arguments) > 1 and os.path.basename(arguments[0]).startswith(b"python") and arguments[1] == marker:
+            running.append(int(proc_dir.name))
+    return running
+
+
+def sync_window_frame(palette):
+    running = window_frame_processes()
+    if palette["style"] != "ornate":
+        for pid in running:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        return []
+    if running or not os.environ.get("WAYLAND_DISPLAY") or not WINDOW_FRAME.is_file():
+        return []
+    try:
+        subprocess.Popen(
+            [sys.executable, str(WINDOW_FRAME)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, start_new_session=True,
+        )
+    except OSError as error:
+        return [f"window frame: {error}"]
+    return []
+
+
 def start_globe_build(name):
     builder = CONFIG_DIR / "hypr" / "window-switcher" / "globe_builder.py"
     if not builder.is_file():
@@ -441,6 +485,7 @@ def apply_theme(name):
     failures += sync_sounds(theme_dir)
     failures += sync_login_screen(palette, wallpaper)
     failures += set_wallpaper(wallpaper, palette)
+    failures += sync_window_frame(palette)
     start_globe_build(name)
     return failures
 
@@ -457,7 +502,10 @@ def restore_theme():
         theme_dir, palette = load_palette(name)
     wallpaper = find_wallpaper(theme_dir, palette)
     write_theme(name, palette, wallpaper)
-    return sync_sounds(theme_dir) + sync_login_screen(palette, wallpaper) + set_wallpaper(wallpaper, palette)
+    return (
+        sync_sounds(theme_dir) + sync_login_screen(palette, wallpaper) + set_wallpaper(wallpaper, palette)
+        + sync_window_frame(palette)
+    )
 
 
 def notify(message):

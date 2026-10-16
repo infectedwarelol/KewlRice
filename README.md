@@ -110,6 +110,7 @@ chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 chmod +x ~/.config/fastfetch/spinning_logo.py
 chmod +x ~/.config/waybar/weather.py
+chmod +x ~/.config/hypr/window-frame/window_frame.py
 chmod +x ~/.config/hypr/brave-video/brave_video.py
 chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
 chmod +x ~/.config/hypr/theme-switch/theme_switch.py ~/.config/hypr/lock/*.sh ~/.config/hypr/power-menu/power_menu.py ~/.config/hypr/control-center/control_center.py
@@ -204,12 +205,13 @@ You can also switch from a terminal:
 ~/.config/hypr/theme-switch/theme_switch.py burgundy
 ```
 
-Five themes come with the rice: `default` (the purple look), `burgundy`, `arctic` (icy blue, with calm crystal chime sounds), `slate` (blue-gray space station, with sonar and console sounds) and `meadow` (light green countryside, with kalimba, marimba and bird sounds). They use `~/.config/hypr/wallpapers/arch-waifu-purple.png`, `burgundy-stairs.png`, `arctic-sky.png`, `slate-station.png` and `meadow-hills.png`. These aren't included, so put your own pictures there or the theme falls back to a plain color.
+Five themes come with the rice: `default` (the purple look), `burgundy`, `arctic` (icy blue, with calm crystal chime sounds), `slate` (blue-gray space station, with sonar and console sounds) and `meadow` (light green countryside, with kalimba, marimba and bird sounds). They use `~/.config/hypr/wallpapers/arch-waifu-purple.png`, `burgundy-stairs.png`, `arctic-sky.png`, `slate-station.png` and `meadow-hills.png`. Eight more are wallpaper themes: `stardust`, `highland`, `ember`, `dusk`, `lilac`, `citypop`, `blush` and `daydream`, each using a picture of the same name in that folder (from wallhaven.cc). `daydream` is special: it draws an ornate pink frame with name tags around every terminal window and swaps fastfetch for a dotted bar layout. These pictures aren't included, so put your own there or the theme falls back to a plain color.
 
 To add a theme, make a folder in `~/.config/kewlrice/themes/` with two files:
 
 - `palette`, with one `name=#rrggbb` per line. Copy `themes/burgundy/palette` and change the colors. It needs `background`, `foreground`, `surface`, `primary`, `secondary`, `accent`, `urgent`, `border_active`, `border_inactive` and `color0` to `color15` for the terminal.
 - `wallpaper.png` (or `.jpg`). You can also point to a picture somewhere else with a `wallpaper=` line in `palette`.
+- Optionally `style=ornate` for the terminal frames and `terminal_padding=18` to keep text inside them.
 - Optional: a `sounds` folder with any of the files from `hypr/sounds` (same names, for example `sounds/login.mp3` or `sounds/keys/terminal-key.wav`). Sounds you leave out use the normal ones.
 
 The new theme shows up in the Super + Tab menu right away. The files in `templates/` decide which color goes where in each app.
