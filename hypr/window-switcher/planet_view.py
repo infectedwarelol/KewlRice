@@ -155,6 +155,13 @@ def device_surface(width, height, scale, image_format=cairo.FORMAT_ARGB32):
     return surface
 
 
+def paint_alpha(cr, alpha):
+    if alpha >= 0.999:
+        cr.paint()
+    else:
+        cr.paint_with_alpha(alpha)
+
+
 def start_globe_build(name):
     builder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "globe_builder.py")
     try:
@@ -847,7 +854,7 @@ class PlanetSwitcher:
         cr.scale(width / size, height / size)
         cr.set_source_surface(surface, 0, 0)
         cr.get_source().set_filter(cairo.FILTER_BILINEAR)
-        cr.paint_with_alpha(alpha)
+        paint_alpha(cr, alpha)
         cr.restore()
 
     def draw_icons(self, cr, cx, cy, radius, scale):
@@ -888,40 +895,50 @@ class PlanetSwitcher:
             cr.translate(-padding, -padding)
             cr.set_source_surface(surface, 0, 0)
             cr.get_source().set_filter(cairo.FILTER_BILINEAR)
-            cr.paint_with_alpha(alpha)
+            paint_alpha(cr, alpha)
             cr.restore()
             self.hit_boxes.append((index, (left, top, size)))
 
-    def fitted_text(self, cr, text, size, bold, max_width):
-        key = (text, size, bold, max_width)
+    def set_label_font(self, cr, size, bold):
+        cr.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD if bold else cairo.FONT_WEIGHT_NORMAL)
+        cr.set_font_size(size)
+        cr.set_font_options(self.font_options)
+
+    def label_surface(self, cr, text, size, bold, max_width, scale):
+        key = (text, size, bold, max_width, scale)
         cached = self.label_cache.get(key)
         if cached:
             return cached
         text = "".join(character for character in text if ord(character) <= 0xFFFF and not 0x2600 <= ord(character) <= 0x27BF).strip()
+        cr.save()
+        self.set_label_font(cr, size, bold)
         if max_width:
             while len(text) > 4 and cr.text_extents(text).width > max_width:
                 text = text[:-2].rstrip() + "…"
         extents = cr.text_extents(text)
-        cached = (text, extents.width, extents.x_bearing)
+        ascent, descent = cr.font_extents()[:2]
+        cr.restore()
+        padding = 3
+        surface = device_surface(extents.width + 2 * padding, ascent + descent + 2 * padding, scale)
+        label = cairo.Context(surface)
+        self.set_label_font(label, size, bold)
+        origin_x, origin_y = padding - extents.x_bearing, padding + ascent
+        for dx, dy, shadow in ((0, 2, 0.55), (1, 1, 0.35), (-1, 1, 0.35)):
+            label.move_to(origin_x + dx, origin_y + dy)
+            label.set_source_rgba(0, 0, 0, shadow)
+            label.show_text(text)
+        label.move_to(origin_x, origin_y)
+        label.set_source_rgb(*self.rgb["foreground"])
+        label.show_text(text)
+        surface.flush()
+        cached = (surface, extents.width / 2 + padding, origin_y)
         self.label_cache[key] = cached
         return cached
 
     def draw_text(self, cr, text, cx, y, size, alpha, scale, bold=False, max_width=None):
-        cr.new_path()
-        cr.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD if bold else cairo.FONT_WEIGHT_NORMAL)
-        cr.set_font_size(size)
-        cr.set_font_options(self.font_options)
-        text, width, bearing = self.fitted_text(cr, text, size, bold, max_width)
-        x = round((cx - width / 2 - bearing) * scale) / scale
-        y = round(y * scale) / scale
-        for dx, dy, shadow in ((0, 2, 0.55), (1, 1, 0.35), (-1, 1, 0.35)):
-            cr.move_to(x + dx, y + dy)
-            cr.set_source_rgba(0, 0, 0, shadow * alpha)
-            cr.show_text(text)
-        cr.move_to(x, y)
-        cr.set_source_rgba(*self.rgb["foreground"], alpha)
-        cr.show_text(text)
-        cr.new_path()
+        surface, half_width, baseline = self.label_surface(cr, text, size, bold, max_width, scale)
+        cr.set_source_surface(surface, round((cx - half_width) * scale) / scale, round((y - baseline) * scale) / scale)
+        paint_alpha(cr, alpha)
 
     def on_draw(self, widget, cr):
         width, height = widget.get_allocated_width(), widget.get_allocated_height()
@@ -936,7 +953,7 @@ class PlanetSwitcher:
         cx, cy, radius = layout["cx"], layout["cy"], layout["radius"]
         cr.set_operator(cairo.OPERATOR_SOURCE)
         cr.set_source_surface(self.backdrop, 0, 0)
-        cr.paint_with_alpha(fade)
+        paint_alpha(cr, fade)
         cr.set_operator(cairo.OPERATOR_OVER)
         animating = abs(zoom - 1.0) > 0.0005 or fade < 1.0
         if animating:
