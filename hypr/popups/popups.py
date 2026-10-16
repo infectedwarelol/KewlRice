@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import calendar
 import datetime
 import hashlib
 import os
@@ -25,6 +26,7 @@ CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "
 COLORS_CSS = CONFIG_DIR / "waybar" / "colors.css"
 BAR_OFFSET = 52
 ART_SIZE = 168
+CALENDAR_CELL = 34
 POSITION_INTERVAL_MS = 500
 REOPEN_GUARD_SECONDS = 0.35
 FALLBACK_COLORS = """
@@ -45,22 +47,12 @@ STYLE = """
 }
 .kewl-popup .weekday { font-size: 20px; font-weight: bold; color: @kewl_accent; }
 .kewl-popup .date { font-size: 12px; color: alpha(@kewl_foreground, 0.7); margin-bottom: 8px; }
-.kewl-popup calendar {
-    background-color: transparent;
-    color: @kewl_foreground;
-    border: none;
-    padding: 4px;
-    font-size: 13px;
-}
-.kewl-popup calendar.header { background-color: transparent; border: none; color: @kewl_foreground; }
-.kewl-popup calendar.button { color: @kewl_accent; background: transparent; border: none; box-shadow: none; }
-.kewl-popup calendar:selected {
-    background-color: @kewl_accent;
-    color: @kewl_background;
-    border-radius: 999px;
-}
-.kewl-popup calendar.highlight { color: alpha(@kewl_accent, 0.85); font-weight: bold; background: transparent; }
-.kewl-popup calendar:indeterminate { color: alpha(@kewl_foreground, 0.3); }
+.kewl-popup .month { font-size: 14px; font-weight: bold; }
+.kewl-popup button.month-step { font-size: 12px; min-width: 30px; min-height: 30px; color: @kewl_accent; }
+.kewl-popup .day-name { font-size: 11px; font-weight: bold; color: @kewl_accent; }
+.kewl-popup .day { font-size: 13px; border-radius: 999px; }
+.kewl-popup .day.outside { color: alpha(@kewl_foreground, 0.3); }
+.kewl-popup .day.today { background-color: @kewl_accent; color: @kewl_background; font-weight: bold; }
 .kewl-popup .title { font-size: 16px; font-weight: bold; }
 .kewl-popup .artist { font-size: 13px; color: @kewl_accent; }
 .kewl-popup .album { font-size: 11px; color: alpha(@kewl_foreground, 0.6); }
@@ -194,27 +186,58 @@ class Popup:
 class CalendarPopup(Popup):
     def __init__(self, on_closed):
         super().__init__(on_closed, anchor_left=False)
-        today = datetime.date.today()
-        weekday = Gtk.Label(label=today.strftime("%A"), xalign=0)
+        self.today = datetime.date.today()
+        self.shown = self.today.replace(day=1)
+        weekday = Gtk.Label(label=self.today.strftime("%A"))
         weekday.get_style_context().add_class("weekday")
-        date = Gtk.Label(label=today.strftime("%B %d, %Y"), xalign=0)
+        date = Gtk.Label(label=self.today.strftime("%B %d, %Y"))
         date.get_style_context().add_class("date")
-        calendar = Gtk.Calendar()
-        calendar.set_display_options(
-            Gtk.CalendarDisplayOptions.SHOW_HEADING | Gtk.CalendarDisplayOptions.SHOW_DAY_NAMES
-        )
-        calendar.mark_day(today.day)
-        calendar.connect("month-changed", self.on_month_changed, today)
-        self.box.pack_start(weekday, False, False, 0)
-        self.box.pack_start(date, False, False, 0)
-        self.box.pack_start(calendar, False, False, 0)
+        navigation = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER, spacing=6)
+        previous = Gtk.Button(label="\uf053")
+        following = Gtk.Button(label="\uf054")
+        for button, step in ((previous, -1), (following, 1)):
+            button.get_style_context().add_class("month-step")
+            button.connect("clicked", self.on_step, step)
+        self.month = Gtk.Label()
+        self.month.get_style_context().add_class("month")
+        self.month.set_size_request(170, -1)
+        navigation.pack_start(previous, False, False, 0)
+        navigation.pack_start(self.month, False, False, 0)
+        navigation.pack_start(following, False, False, 0)
+        self.grid = Gtk.Grid(column_spacing=4, row_spacing=4, halign=Gtk.Align.CENTER)
+        for widget in (weekday, date, navigation, self.grid):
+            self.box.pack_start(widget, False, False, 0)
+        self.fill()
         self.show()
 
-    def on_month_changed(self, calendar, today):
-        calendar.clear_marks()
-        year, month, _ = calendar.get_date()
-        if (year, month + 1) == (today.year, today.month):
-            calendar.mark_day(today.day)
+    def on_step(self, _button, step):
+        month = self.shown.month - 1 + step
+        self.shown = self.shown.replace(year=self.shown.year + month // 12, month=month % 12 + 1)
+        self.fill()
+
+    def cell(self, text, classes):
+        label = Gtk.Label(label=text, xalign=0.5, yalign=0.5)
+        label.set_size_request(CALENDAR_CELL, CALENDAR_CELL)
+        for name in classes:
+            label.get_style_context().add_class(name)
+        return label
+
+    def fill(self):
+        for child in self.grid.get_children():
+            self.grid.remove(child)
+        self.month.set_text(self.shown.strftime("%B %Y"))
+        for column, name in enumerate(calendar.day_abbr[6:] + calendar.day_abbr[:6]):
+            self.grid.attach(self.cell(name[:2], ("day-name",)), column, 0, 1, 1)
+        weeks = calendar.Calendar(firstweekday=6).monthdatescalendar(self.shown.year, self.shown.month)
+        for row, week in enumerate(weeks, start=1):
+            for column, day in enumerate(week):
+                classes = ["day"]
+                if day.month != self.shown.month:
+                    classes.append("outside")
+                if day == self.today:
+                    classes.append("today")
+                self.grid.attach(self.cell(str(day.day), classes), column, row, 1, 1)
+        self.grid.show_all()
 
 
 class PlayerPopup(Popup):
