@@ -32,7 +32,7 @@ The wallpaper in the screenshots isn't included, so pick your own.
 - Every app see-through at 80%, and new apps you install get it too
 - Kitty and Konsole with a purple background and clear text, and btop and cmatrix see-through in kitty too. cmatrix rains in your theme's accent color
 - A launcher on Super+R (press it again to close it)
-- An Alt+Tab switcher where your open apps sit on a glowing Earth in your theme's colors (real coastlines, city lights and a network of lines), with Mac style app icons. Keep tapping Tab to spin it, it goes round forever. The light follows the time of day, sunrise and sunset glow orange, and at night tonight's real moon phase shows next to it
+- An Alt+Tab switcher where your open apps sit on a glowing Earth in your theme's colors (real coastlines, relief, clouds, shiny oceans and a soft atmosphere) floating in a starfield, with Mac style app icons. Keep tapping Tab to spin it, it goes round forever, and it slowly turns on its own when you wait. The sun follows the real time of day: sunrise and sunset glow orange, and at night the city lights come on ([every theme, day and night](screenshots/alttab-themes.jpg))
 - A clipboard history on Super+V
 - A sound when an app opens or goes fullscreen, and another when it closes
 - A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace, and it keeps clicking while you hold a key)
