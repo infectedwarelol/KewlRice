@@ -8,7 +8,8 @@
     "spacing": 0,
     "modules-left": [
         "custom/logo",
-        "group/controls"
+        "group/controls",
+        "group/media"
     ],
     "modules-center": [
         "group/datetime"
@@ -38,6 +39,26 @@
             "custom/device-battery",
             "custom/power"
         ]
+    },
+    "group/media": {
+        "orientation": "horizontal",
+        "modules": [
+            "image#album-art",
+            "custom/now-playing"
+        ]
+    },
+    "image#album-art": {
+        "exec": "~/.config/waybar/album-art.sh",
+        "size": 26,
+        "interval": 2,
+        "on-click": "~/.config/hypr/popups/popup_request.py player"
+    },
+    "custom/now-playing": {
+        "exec": "~/.config/waybar/now-playing.sh",
+        "return-type": "json",
+        "interval": 1,
+        "escape": false,
+        "on-click": "~/.config/hypr/popups/popup_request.py player"
     },
     "group/datetime": {
         "orientation": "horizontal",
@@ -146,6 +167,7 @@
     },
     "clock": {
         "interval": 1,
+        "on-click": "~/.config/hypr/popups/popup_request.py calendar",
         "format": "<span weight='bold' size='11pt'>{0:%H:%M:%S}</span>\n<span size='7.5pt' fgalpha='70%'>{0:%A, %B %d}</span>",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
     },

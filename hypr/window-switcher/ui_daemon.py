@@ -9,6 +9,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 THEME_SWITCH_DIR = HERE.parent / "theme-switch"
+POPUPS_DIR = HERE.parent / "popups"
+sys.path.insert(0, str(POPUPS_DIR))
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(THEME_SWITCH_DIR))
 
@@ -18,12 +20,13 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk
 
 import planet_view
+import popups
 import theme_picker
 import theme_switch
 from keypress_tracker import LOCK_FILE, clear_presses
 from window_switcher import STALE_PRESS_SECONDS, run_switcher
 
-SOURCE_FILES = [path for directory in (HERE, THEME_SWITCH_DIR) for path in directory.glob("*.py")]
+SOURCE_FILES = [path for directory in (HERE, THEME_SWITCH_DIR, POPUPS_DIR) for path in directory.glob("*.py")]
 SOCKET_PATH = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.sock")
 DAEMON_LOCK = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.lock")
 
@@ -41,6 +44,7 @@ def source_signature():
 class UiDaemon:
     def __init__(self):
         self.busy = None
+        self.popups = popups.PopupHost()
         self.signature = source_signature()
         if os.path.exists(SOCKET_PATH):
             os.unlink(SOCKET_PATH)
@@ -68,6 +72,8 @@ class UiDaemon:
             GLib.idle_add(self.alttab, message[1])
         elif message[0] == "menu":
             GLib.idle_add(self.menu)
+        elif message[0] == "popup" and len(message) == 2:
+            GLib.idle_add(self.popups.toggle, message[1])
         return True
 
     def alttab(self, pressed_at):
@@ -125,6 +131,8 @@ def main():
         GLib.idle_add(daemon.alttab, replay[1])
     elif replay and replay[0] == "menu":
         GLib.idle_add(daemon.menu)
+    elif replay and replay[0] == "popup" and len(replay) == 2:
+        GLib.idle_add(daemon.popups.toggle, replay[1])
     Gtk.main()
     return 0
 

@@ -27,6 +27,7 @@ tooltip label {
 
 #custom-logo,
 #controls,
+#media,
 #datetime,
 #status {
     background-color: alpha(@kewl_background, 0.72);
@@ -49,6 +50,24 @@ tooltip label {
 #controls,
 #status {
     padding: 0 6px;
+}
+
+#media {
+    margin-left: 6px;
+    padding: 0 12px 0 5px;
+}
+
+#image.album-art {
+    margin: 0 8px 0 0;
+}
+
+#custom-now-playing {
+    font-size: 11px;
+    color: @kewl_foreground;
+}
+
+#custom-now-playing.paused {
+    color: alpha(@kewl_foreground, 0.6);
 }
 
 #custom-control,
