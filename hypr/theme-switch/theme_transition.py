@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import math
+import os
 import subprocess
 import sys
 
@@ -17,6 +18,7 @@ SWEEP_SECONDS = 0.6
 EDGE_WIDTH = 260.0
 GLOW_WIDTH = 90.0
 WAIT_FOR_GO_SECONDS = 4.0
+SWEEP_SOUND = os.path.expanduser("~/.config/hypr/sounds/theme-switch.mp3")
 
 
 def hex_to_rgb(color):
@@ -175,6 +177,9 @@ def main(arguments):
         return True
 
     def go(*_arguments):
+        if not any(sweep.running for sweep in sweeps) and os.path.isfile(SWEEP_SOUND):
+            subprocess.Popen(["pw-play", SWEEP_SOUND], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL, start_new_session=True)
         for sweep in sweeps:
             if not sweep.running:
                 sweep.start()
