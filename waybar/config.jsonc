@@ -10,6 +10,9 @@
         "custom/logo",
         "group/controls"
     ],
+    "modules-center": [
+        "group/datetime"
+    ],
     "modules-right": [
         "group/status"
     ],
@@ -33,8 +36,14 @@
             "memory",
             "temperature",
             "custom/device-battery",
-            "clock",
             "custom/power"
+        ]
+    },
+    "group/datetime": {
+        "orientation": "horizontal",
+        "modules": [
+            "clock",
+            "custom/weather"
         ]
     },
     "custom/logo": {
@@ -125,16 +134,21 @@
         "interval": 60,
         "format": "{icon} {text}",
         "format-icons": {
-            "headset": "󰋎",
+            "headset": "󰁹",
             "mouse": "󰍽",
             "keyboard": "󰌌",
             "default": "󰂄"
         }
     },
     "clock": {
-        "format": "󰥔 {:%H:%M}",
-        "format-alt": "󰃭 {:%a %d %b}",
+        "interval": 1,
+        "format": "<span weight='bold' size='11pt'>{0:%H:%M:%S}</span>\n<span size='7.5pt' fgalpha='70%'>{0:%A, %B %d}</span>",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "custom/weather": {
+        "exec": "~/.config/waybar/weather.py",
+        "return-type": "json",
+        "interval": 900
     },
     "custom/power": {
         "format": "󰐥",

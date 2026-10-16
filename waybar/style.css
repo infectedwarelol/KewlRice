@@ -27,6 +27,7 @@ tooltip label {
 
 #custom-logo,
 #controls,
+#datetime,
 #status {
     background-color: alpha(@kewl_background, 0.72);
     border: 1px solid alpha(@kewl_foreground, 0.08);
@@ -89,8 +90,7 @@ tooltip label {
 #cpu,
 #memory,
 #temperature,
-#custom-device-battery,
-#clock {
+#custom-device-battery {
     margin: 6px 2px;
     padding: 0 9px;
     border-radius: 999px;
@@ -121,8 +121,25 @@ tooltip label {
     color: @kewl_accent;
 }
 
+#datetime {
+    padding: 0 14px;
+    border-radius: 12px;
+}
+
 #clock {
+    padding: 0 18px 0 0;
+    color: @kewl_foreground;
+    font-size: 11px;
+}
+
+#custom-weather {
+    color: @kewl_foreground;
+    font-size: 15px;
     font-weight: bold;
+}
+
+#custom-weather.unavailable {
+    color: alpha(@kewl_foreground, 0.4);
 }
 
 #tray > .needs-attention {
