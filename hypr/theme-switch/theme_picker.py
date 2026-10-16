@@ -157,8 +157,16 @@ class ThemePicker:
         self.selected = (self.selected + step) % len(self.entries)
 
     def finish(self, choice):
+        if self.finished:
+            return
+        self.finished = True
         self.choice = choice
         Gtk.main_quit()
+
+    def on_close_signal(self):
+        self.close_signal_pending = False
+        self.finish(None)
+        return False
 
     def on_frame(self, _widget, frame_clock):
         now = frame_clock.get_frame_time() / 1_000_000
@@ -432,8 +440,12 @@ class ThemePicker:
         self.prerender()
         self.window.show_all()
         self.area.add_tick_callback(self.on_frame)
-        unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: self.finish(None) or False)
+        self.finished = False
+        self.close_signal_pending = True
+        close_signal = unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.on_close_signal)
         Gtk.main()
+        if self.close_signal_pending:
+            GLib.source_remove(close_signal)
         self.window.destroy()
         while Gtk.events_pending():
             Gtk.main_iteration()

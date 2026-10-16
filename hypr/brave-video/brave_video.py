@@ -57,14 +57,29 @@ def discord_audio_playing():
 def watch_discord(events, discord_open):
     playing = False
     while True:
-        if not discord_open.is_set():
-            if playing:
-                playing = False
-                events.put(("discord", playing))
-            discord_open.wait()
+        discord_open.wait()
         now = discord_audio_playing()
         if now != playing:
             playing = now
+            events.put(("discord", playing))
+        try:
+            process = subprocess.Popen(["pactl", "subscribe"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+        except OSError:
+            time.sleep(5)
+            continue
+        for line in process.stdout:
+            if not discord_open.is_set():
+                break
+            if "sink-input" not in line:
+                continue
+            now = discord_audio_playing()
+            if now != playing:
+                playing = now
+                events.put(("discord", playing))
+        process.terminate()
+        process.wait()
+        if playing and not discord_open.is_set():
+            playing = False
             events.put(("discord", playing))
         time.sleep(1)
 

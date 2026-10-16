@@ -481,6 +481,11 @@ def sync_window_frame(palette):
             except ProcessLookupError:
                 pass
         return []
+    for pid in running:
+        try:
+            os.kill(pid, signal.SIGUSR1)
+        except ProcessLookupError:
+            pass
     if running or not os.environ.get("WAYLAND_DISPLAY") or not WINDOW_FRAME.is_file():
         return []
     try:

@@ -169,12 +169,13 @@ def paint_alpha(cr, alpha):
 def start_globe_build(name):
     builder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "globe_builder.py")
     try:
-        subprocess.Popen(
+        process = subprocess.Popen(
             [sys.executable, builder, name], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, start_new_session=True,
         )
     except OSError:
-        pass
+        return
+    GLib.child_watch_add(GLib.PRIORITY_DEFAULT, process.pid, lambda *_: None)
 
 
 class GlobeRenderer:

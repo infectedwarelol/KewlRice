@@ -3,6 +3,7 @@ import fcntl
 import json
 import math
 import os
+import signal
 import socket
 import sys
 
@@ -12,6 +13,13 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gdk, GLib, Gtk, GtkLayerShell
+
+try:
+    gi.require_version("GLibUnix", "2.0")
+    from gi.repository import GLibUnix
+    unix_signal_add = GLibUnix.signal_add
+except (ValueError, ImportError):
+    unix_signal_add = GLib.unix_signal_add
 
 import cairo
 
@@ -34,12 +42,13 @@ TERMINAL_CLASSES = {
 REFRESH_EVENTS = {
     "openwindow", "closewindow", "movewindow", "movewindowv2", "workspace", "workspacev2", "focusedmon",
     "focusedmonv2", "activewindowv2", "changefloatingmode", "fullscreen", "activespecial", "activespecialv2",
-    "windowtitlev2", "moveworkspace", "moveworkspacev2", "pin", "togglegroup", "minimized",
+    "moveworkspace", "moveworkspacev2", "pin", "togglegroup", "minimized",
 }
 RESTART_EVENTS = {"monitoradded", "monitoraddedv2", "monitorremoved", "monitorremovedv2"}
 EVENT_DELAY_MS = 30
 SETTLE_DELAY_MS = 320
 POLL_INTERVAL_MS = 400
+IDLE_POLL_INTERVAL_MS = 2000
 INSET = 5
 CORNER = 28
 CENTER_GAP = 34
@@ -540,8 +549,7 @@ class FrameOverlay:
         for workspace_id in dict.fromkeys(window["workspace"]["id"] for window in mine):
             ordered.extend(stacking_order([window for window in mine if window["workspace"]["id"] == workspace_id]))
         snapshot = [
-            (window["address"], tuple(window["at"]), tuple(window["size"]), window["class"], window["title"],
-             window["workspace"]["id"])
+            (window["address"], tuple(window["at"]), tuple(window["size"]), window["class"], window["workspace"]["id"])
             for window in ordered
         ]
         fullscreen = any(
@@ -565,7 +573,7 @@ class FrameOverlay:
         if not self.monitor:
             return False
         origin_x, origin_y = self.monitor["x"], self.monitor["y"]
-        for address, at, size, window_class, title, workspace_id in self.windows:
+        for address, at, size, window_class, workspace_id in self.windows:
             x, y = at[0] - origin_x, at[1] - origin_y
             width, height = size
             cr.set_operator(cairo.OPERATOR_CLEAR)
@@ -653,13 +661,16 @@ class WindowFrames:
         display = Gdk.Display.get_default()
         self.overlays = [FrameOverlay(display.get_monitor(index), self.colors) for index in range(display.get_n_monitors())]
         self.pending = None
+        self.settle = None
+        self.fast = False
         self.buffer = b""
         self.events = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.events.connect(hyprland_socket(".socket2.sock"))
         self.events.setblocking(False)
         GLib.io_add_watch(self.events.fileno(), GLib.PRIORITY_DEFAULT, GLib.IO_IN | GLib.IO_HUP | GLib.IO_ERR, self.on_events)
-        GLib.timeout_add(POLL_INTERVAL_MS, self.poll)
         self.refresh()
+        GLib.timeout_add(POLL_INTERVAL_MS if self.fast else IDLE_POLL_INTERVAL_MS, self.poll)
+        unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGUSR1, self.reload_colors)
 
     def on_events(self, _fd, condition):
         if condition & (GLib.IO_HUP | GLib.IO_ERR):
@@ -690,7 +701,9 @@ class WindowFrames:
             self.pending = GLib.timeout_add(delay, self.run_pending)
 
     def schedule_settle(self):
-        GLib.timeout_add(SETTLE_DELAY_MS, self.run_once)
+        if self.settle is not None:
+            GLib.source_remove(self.settle)
+        self.settle = GLib.timeout_add(SETTLE_DELAY_MS, self.run_once)
 
     def run_pending(self):
         self.pending = None
@@ -698,8 +711,20 @@ class WindowFrames:
         return False
 
     def run_once(self):
+        self.settle = None
         self.refresh()
         return False
+
+    def reload_colors(self):
+        modified = colors_modified()
+        if modified != self.colors_modified:
+            self.colors_modified = modified
+            colors = load_colors()
+            for overlay in self.overlays:
+                overlay.colors = colors
+                overlay.state = None
+        self.refresh()
+        return True
 
     def poll(self):
         if source_modified() != self.source_modified:
@@ -712,7 +737,8 @@ class WindowFrames:
                 overlay.colors = colors
                 overlay.state = None
         self.refresh()
-        return True
+        GLib.timeout_add(POLL_INTERVAL_MS if self.fast else IDLE_POLL_INTERVAL_MS, self.poll)
+        return False
 
     def refresh(self):
         try:
@@ -721,6 +747,12 @@ class WindowFrames:
             active = hyprland_request("j/activewindow") or {}
         except (OSError, ValueError):
             return
+        visible = {monitor["activeWorkspace"]["id"] for monitor in monitors}
+        visible |= {(monitor.get("specialWorkspace") or {}).get("id") for monitor in monitors}
+        self.fast = any(
+            window["floating"] and window["workspace"]["id"] in visible and (window["class"] or "").lower() in TERMINAL_CLASSES
+            for window in windows
+        )
         for overlay in self.overlays:
             monitor = next((monitor for monitor in monitors if overlay.matches(monitor)), None)
             if monitor:

@@ -22,7 +22,8 @@ from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, GtkLayerShell, Playerctl
 import cairo
 
 CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
-CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "kewlrice" / "albumart"
+CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "kewlrice" / "album-art"
+ART_CACHE_LIMIT = 100
 COLORS_CSS = CONFIG_DIR / "waybar" / "colors.css"
 BAR_OFFSET = 52
 ART_SIZE = 168
@@ -75,7 +76,14 @@ STYLE = """
 """
 
 
-def install_style():
+def colors_signature():
+    try:
+        return COLORS_CSS.stat().st_mtime_ns
+    except OSError:
+        return None
+
+
+def install_style(previous):
     provider = Gtk.CssProvider()
     try:
         colors = COLORS_CSS.read_text()
@@ -85,11 +93,15 @@ def install_style():
         provider.load_from_data((colors + STYLE).encode())
     except GLib.Error:
         provider.load_from_data((FALLBACK_COLORS + STYLE).encode())
-    Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+    screen = Gdk.Screen.get_default()
+    if previous:
+        Gtk.StyleContext.remove_provider_for_screen(screen, previous)
+    Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+    return provider
 
 
 def art_cache_path(url):
-    return CACHE_DIR / (hashlib.sha1(url.encode()).hexdigest()[:20] + ".img")
+    return CACHE_DIR / (hashlib.sha1(url.encode()).hexdigest() + ".img")
 
 
 def local_art(url):
@@ -115,9 +127,21 @@ def download_art(url):
         temporary = target.with_name(f".{target.name}.{os.getpid()}")
         temporary.write_bytes(data)
         os.replace(temporary, target)
+        prune_art_cache()
         return target
     except (OSError, ValueError):
         return None
+
+
+def prune_art_cache():
+    def modified(path):
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return 0
+    files = sorted((path for path in CACHE_DIR.glob("*.img")), key=modified, reverse=True)
+    for path in files[ART_CACHE_LIMIT:]:
+        path.unlink(missing_ok=True)
 
 
 def format_time(microseconds):
@@ -425,7 +449,8 @@ class PopupHost:
     def __init__(self):
         self.open = {}
         self.closed_at = {}
-        self.styled = False
+        self.provider = None
+        self.style_signature = None
 
     def closed(self, name, popup):
         if self.open.get(name) is popup:
@@ -435,9 +460,10 @@ class PopupHost:
     def toggle(self, name):
         if name not in POPUPS:
             return False
-        if not self.styled:
-            install_style()
-            self.styled = True
+        signature = colors_signature()
+        if self.provider is None or signature != self.style_signature:
+            self.provider = install_style(self.provider)
+            self.style_signature = signature
         current = self.open.pop(name, None)
         if current:
             current.close()

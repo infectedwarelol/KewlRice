@@ -50,13 +50,12 @@
     "image#album-art": {
         "exec": "~/.config/waybar/album-art.sh",
         "size": 26,
-        "interval": 2,
+        "interval": 3,
         "on-click": "~/.config/hypr/popups/popup_request.py player"
     },
     "custom/now-playing": {
         "exec": "~/.config/waybar/now-playing.sh",
         "return-type": "json",
-        "interval": 1,
         "escape": false,
         "on-click": "~/.config/hypr/popups/popup_request.py player"
     },

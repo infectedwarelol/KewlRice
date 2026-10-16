@@ -111,10 +111,11 @@ class UiDaemon:
         finally:
             self.busy = None
         if name:
-            subprocess.Popen(
+            process = subprocess.Popen(
                 [sys.executable, str(THEME_SWITCH_DIR / "theme_switch.py"), name], stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
             )
+            GLib.child_watch_add(GLib.PRIORITY_DEFAULT, process.pid, lambda *_: None)
         return False
 
 
