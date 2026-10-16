@@ -118,7 +118,11 @@ def main():
     sound = None
     spin_sound = next((path for path in SPIN_SOUNDS if os.path.exists(path)), None)
     if spin_sound:
-        sound = subprocess.Popen(["pw-play", spin_sound], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        sound = subprocess.Popen(
+            ["pw-play", spin_sound], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    interrupted = False
     try:
         start = time.monotonic()
         while True:
@@ -133,9 +137,9 @@ def main():
                 break
             time.sleep(1 / FPS)
     except KeyboardInterrupt:
-        pass
+        interrupted = True
     finally:
-        if sound and sound.poll() is None:
+        if interrupted and sound and sound.poll() is None:
             sound.terminate()
         columns, _ = terminal_size()
         room = columns - width - GAP - 1
