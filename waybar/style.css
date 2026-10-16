@@ -112,9 +112,23 @@ tooltip label {
 }
 
 #network.disconnected,
-#temperature.critical,
-#custom-device-battery.low {
+#temperature.critical {
     color: @kewl_urgent;
+}
+
+#custom-device-battery.medium {
+    color: @kewl_yellow;
+}
+
+#custom-device-battery.low {
+    color: @kewl_red;
+}
+
+#custom-device-battery.critical {
+    color: @kewl_red;
+    font-weight: bold;
+    background-color: alpha(@kewl_red, 0.18);
+    border-color: alpha(@kewl_red, 0.45);
 }
 
 #custom-device-battery.charging {

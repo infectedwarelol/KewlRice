@@ -18,7 +18,9 @@ for supply in /sys/class/power_supply/*; do
         kind="headset"
     fi
     level="normal"
+    [ "$capacity" -le 40 ] && level="medium"
     [ "$capacity" -le 20 ] && level="low"
+    [ "$capacity" -le 10 ] && level="critical"
     [ "$status" = "Charging" ] && level="charging"
     name="${name//\\/}"
     name="${name//\"/}"
