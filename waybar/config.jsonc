@@ -33,7 +33,7 @@
             "idle_inhibitor",
             "network",
             "cpu",
-            "memory",
+            "custom/memory",
             "temperature",
             "custom/device-battery",
             "custom/power"
@@ -119,10 +119,11 @@
         "format": "󰻠 {usage}%",
         "tooltip": false
     },
-    "memory": {
+    "custom/memory": {
+        "exec": "~/.config/waybar/memory.sh",
+        "return-type": "json",
         "interval": 5,
-        "format": "󰍛 {used:0.1f}/{total:0.0f}G",
-        "tooltip-format": "RAM {used:0.2f} GiB of {total:0.2f} GiB ({percentage}%)"
+        "format": "󰍛 {}"
     },
     "temperature": {
         "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",

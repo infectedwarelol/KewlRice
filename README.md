@@ -110,6 +110,7 @@ chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 chmod +x ~/.config/fastfetch/spinning_logo.py
 chmod +x ~/.config/waybar/weather.py
+chmod +x ~/.config/waybar/memory.sh
 chmod +x ~/.config/hypr/window-frame/window_frame.py
 chmod +x ~/.config/hypr/brave-video/brave_video.py
 chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
