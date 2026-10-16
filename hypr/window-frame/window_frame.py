@@ -46,7 +46,7 @@ TAG_FONT = "JetBrainsMono Nerd Font"
 TAG_HEIGHT = 18
 TITLE_LIMIT = 32
 CHECK_GLYPH = ""
-WARNING_GLYPH = ""
+WORKSPACE_GLYPH = "\uf009"
 
 
 def hex_to_rgb(color):
@@ -253,12 +253,11 @@ class FrameOverlay:
             cr.close_path()
             cr.fill()
         self.draw_tag(cr, f"{CHECK_GLYPH}  {shorten(title, TITLE_LIMIT) or 'system'}", right - span, bottom, "right", focused)
-        self.draw_tag(cr, f"{WARNING_GLYPH}  ws {workspace_id}", left + span, bottom, "left", focused)
+        self.draw_tag(cr, f"{WORKSPACE_GLYPH}  ws {workspace_id}", left + span, bottom, "left", focused)
         cr.restore()
 
     def draw_tag(self, cr, text, anchor_x, center_y, align, focused):
         accent, background, foreground = self.colors["accent"], self.colors["background"], self.colors["foreground"]
-        urgent = self.colors["urgent"]
         cr.select_font_face(TAG_FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         cr.set_font_size(10.5)
         extents = cr.text_extents(text)
@@ -272,10 +271,7 @@ class FrameOverlay:
         cr.set_source_rgba(*accent, 1.0 if focused else 0.55)
         cr.stroke()
         cr.move_to(x + 9 - extents.x_bearing, center_y + 3.8)
-        if align == "left":
-            cr.set_source_rgba(*urgent, 1.0 if focused else 0.6)
-        else:
-            cr.set_source_rgba(*foreground, 1.0 if focused else 0.6)
+        cr.set_source_rgba(*foreground, 1.0 if focused else 0.6)
         cr.show_text(text)
         cr.new_path()
 
