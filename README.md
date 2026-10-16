@@ -53,7 +53,7 @@ Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl ttf-jetbrains-mono-nerd cliphist wl-clip-persist
+sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish
 ```
 
 ## Install
@@ -81,6 +81,7 @@ If `unzip` is missing, install it with `sudo pacman -S unzip`. Every step below 
 mkdir -p ~/rice-backup
 cp -r ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.config/btop ~/.config/fastfetch ~/rice-backup/ 2>/dev/null
 cp ~/.bashrc ~/rice-backup/bashrc 2>/dev/null
+cp -r ~/.config/fish ~/rice-backup/ 2>/dev/null
 ```
 
 To go back to your old setup later, copy those files back from `~/rice-backup`.
@@ -88,7 +89,7 @@ To go back to your old setup later, copy those files back from `~/rice-backup`.
 3. Copy everything into place:
 
 ```bash
-mkdir -p ~/.config/kewlrice ~/.config/fastfetch ~/.config/btop ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole ~/.local/share/applications
+mkdir -p ~/.config/fish ~/.config/kewlrice ~/.config/fastfetch ~/.config/btop ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.local/share/konsole ~/.local/share/applications
 cp -r hypr/* ~/.config/hypr/
 cp waybar/* ~/.config/waybar/
 cp wofi/* ~/.config/wofi/
@@ -97,7 +98,8 @@ cp kitty/* ~/.config/kitty/
 cp mako/* ~/.config/mako/
 cp btop/* ~/.config/btop/
 cp fastfetch/* ~/.config/fastfetch/
-cp bash/bashrc ~/.bashrc
+cp fish/config.fish ~/.config/fish/config.fish
+chsh -s /usr/bin/fish
 cp konsole/Transparent.colorscheme konsole/Transparent.profile ~/.local/share/konsole/
 cp konsole/konsolerc dolphin/dolphinrc ~/.config/
 cp applications/snipping-tool.desktop ~/.local/share/applications/
