@@ -29,3 +29,5 @@ color12=#1a8fff
 color13=#e6ccff
 color14=#14ffff
 color15=#ffffff
+style=neon
+terminal_padding=14

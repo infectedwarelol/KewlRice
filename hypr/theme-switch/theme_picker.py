@@ -367,8 +367,6 @@ class ThemePicker:
         entry = self.entries[index]
         cx, cy, card_height = layout["cx"], layout["cy"], layout["card_height"]
         self.draw_pill(cr, entry, cx, cy - card_height * 0.58 - 62)
-        hint = "Arrows or scroll to choose    ·    Enter to apply    ·    Esc to close"
-        self.draw_text(cr, hint, cx, cy + card_height * 0.58 + 52, 13, hex_to_rgb(entry["palette"]["foreground"]), 0.6, False, True)
         sprite.flush()
         self.labels[index] = sprite
         return sprite

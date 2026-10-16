@@ -9,7 +9,7 @@
   "display": {
     "separator": "  ·  ",
     "color": {
-      "keys": "1;38;2;{{urgent.ansi}}",
+      "keys": "1;38;2;{{accent.ansi}}",
       "title": "1;38;2;{{accent.ansi}}",
       "separator": "38;2;{{primary.ansi}}"
     },

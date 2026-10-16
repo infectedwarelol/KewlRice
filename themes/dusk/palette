@@ -24,3 +24,5 @@ color12=#a4b3e8
 color13=#e79de8
 color14=#a4dae8
 color15=#f1e7f4
+style=deco
+terminal_padding=14

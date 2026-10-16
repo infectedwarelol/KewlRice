@@ -24,3 +24,5 @@ color12=#a3b1dc
 color13=#e69bdc
 color14=#a3d8dc
 color15=#efe4e8
+style=flame
+terminal_padding=14

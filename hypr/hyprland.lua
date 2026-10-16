@@ -494,6 +494,10 @@ local terminalBackspaceSoundFile = os.getenv("HOME") .. "/.config/hypr/sounds/ke
 local terminalKeyRepeat          = os.getenv("HOME") .. "/.config/hypr/terminal-key-repeat.sh"
 local backspaceKeycode           = 22
 local nonRepeatingKeycodes       = { [37] = true, [50] = true, [62] = true, [64] = true, [66] = true, [105] = true, [108] = true, [133] = true, [134] = true }
+local modifierKeycodes          = { [37] = true, [50] = true, [62] = true, [64] = true, [66] = true, [105] = true, [108] = true, [133] = true, [134] = true }
+local shortcutModifierKeycodes  = { [37] = true, [64] = true, [105] = true, [108] = true, [133] = true, [134] = true }
+local silentKeycodes            = { [67] = true, [68] = true, [69] = true, [70] = true, [71] = true, [72] = true, [73] = true, [74] = true, [75] = true, [76] = true, [95] = true, [96] = true }
+local heldShortcutModifiers     = {}
 local repeatingKeycode           = nil
 local repeatGeneration           = 0
 hl.exec_cmd(terminalKeyRepeat .. " stop-all")
@@ -504,7 +508,11 @@ local function stopTerminalKeyRepeat()
     end
 end
 hl.on("input.keyboard.key", function(keycode, _, state)
-    if state == 1 then
+    if shortcutModifierKeycodes[keycode] then
+        heldShortcutModifiers[keycode] = state == 1 or nil
+    end
+    local typing = not modifierKeycodes[keycode] and not silentKeycodes[keycode] and next(heldShortcutModifiers) == nil
+    if state == 1 and typing then
         local active = hl.get_active_window()
         if active and active.class == "kitty" then
             local soundFile = keycode == backspaceKeycode and terminalBackspaceSoundFile or terminalKeySoundFile

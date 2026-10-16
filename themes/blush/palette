@@ -24,3 +24,5 @@ color12=#a8b1df
 color13=#eb9bdf
 color14=#a8d8df
 color15=#ffeef0
+style=ribbon
+terminal_padding=14

@@ -24,3 +24,5 @@ color12=#a1b2e9
 color13=#e49ce9
 color14=#a1d9e9
 color15=#efe6fb
+style=synth
+terminal_padding=14

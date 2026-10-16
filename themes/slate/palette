@@ -24,3 +24,5 @@ color12=#93b6e6
 color13=#c3b8ea
 color14=#95dbe8
 color15=#eef3fa
+style=hud
+terminal_padding=14

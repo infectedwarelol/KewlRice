@@ -24,3 +24,5 @@ color12=#8fc6ff
 color13=#d6ccff
 color14=#a8f4fb
 color15=#ffffff
+style=frost
+terminal_padding=14

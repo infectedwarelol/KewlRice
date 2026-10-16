@@ -5,6 +5,7 @@ import functools
 import json
 import os
 import re
+import select
 import shutil
 import signal
 import subprocess
@@ -35,9 +36,11 @@ REQUIRED_KEYS = (
     "border_active", "border_inactive",
 ) + tuple(f"color{index}" for index in range(16))
 HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}")
-STYLE_KEYS = {"style": re.compile(r"plain|ornate"), "terminal_padding": re.compile(r"[0-9]{1,2}")}
+STYLE_KEYS = {"style": re.compile(r"plain|ornate|neon|gothic|frost|hud|vine|constellation|celtic|flame|deco|synth|retro|ribbon"), "terminal_padding": re.compile(r"[0-9]{1,2}")}
 STYLE_DEFAULTS = {"style": "plain", "terminal_padding": "0"}
 WINDOW_FRAME = CONFIG_DIR / "hypr" / "window-frame" / "window_frame.py"
+WALLPAPER_TRANSITION = CONFIG_DIR / "hypr" / "theme-switch" / "wallpaper_transition.py"
+TRANSITION_READY_SECONDS = 1.5
 THEME_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 PLACEHOLDER = re.compile(r"\{\{\s*([a-z0-9_]+(?:\|[a-z0-9_]+)*)(?:\.(hex|rgb|ansi))?\s*\}\}")
 USAGE = "usage: theme_switch.py <theme-name> | --menu | --restore | --list | --current"
@@ -398,6 +401,28 @@ def swaybg_processes():
     return processes
 
 
+def start_wallpaper_transition(running, wallpaper, palette):
+    if not WALLPAPER_TRANSITION.is_file():
+        return
+    previous = next(
+        (arguments[index + 1] for arguments in running.values() for index, argument in enumerate(arguments[:-1]) if argument == "-i"),
+        None,
+    )
+    if not previous or not Path(previous).is_file() or Path(previous) == Path(wallpaper):
+        return
+    try:
+        transition = subprocess.Popen(
+            [sys.executable, str(WALLPAPER_TRANSITION), previous, str(wallpaper), palette["accent"]],
+            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, start_new_session=True,
+        )
+    except OSError:
+        return
+    ready, _, _ = select.select([transition.stdout], [], [], TRANSITION_READY_SECONDS)
+    if ready:
+        transition.stdout.readline()
+    transition.stdout.close()
+
+
 def set_wallpaper(wallpaper, palette):
     if not os.environ.get("WAYLAND_DISPLAY"):
         return []
@@ -407,6 +432,8 @@ def set_wallpaper(wallpaper, palette):
     running = swaybg_processes()
     if any(arguments[1:] == command[1:] for arguments in running.values()) and len(running) == 1:
         return []
+    if wallpaper:
+        start_wallpaper_transition(running, wallpaper, palette)
     try:
         new_process = subprocess.Popen(
             command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -442,7 +469,7 @@ def window_frame_processes():
 
 def sync_window_frame(palette):
     running = window_frame_processes()
-    if palette["style"] != "ornate":
+    if palette["style"] == "plain":
         for pid in running:
             try:
                 os.kill(pid, signal.SIGTERM)
