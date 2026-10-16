@@ -23,13 +23,25 @@ import theme_switch
 from keypress_tracker import LOCK_FILE, clear_presses
 from window_switcher import STALE_PRESS_SECONDS, run_switcher
 
+SOURCE_FILES = [path for directory in (HERE, THEME_SWITCH_DIR) for path in directory.glob("*.py")]
 SOCKET_PATH = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.sock")
 DAEMON_LOCK = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.lock")
+
+
+def source_signature():
+    signature = []
+    for path in SOURCE_FILES:
+        try:
+            signature.append(path.stat().st_mtime_ns)
+        except OSError:
+            signature.append(None)
+    return signature
 
 
 class UiDaemon:
     def __init__(self):
         self.busy = None
+        self.signature = source_signature()
         if os.path.exists(SOCKET_PATH):
             os.unlink(SOCKET_PATH)
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -48,6 +60,10 @@ class UiDaemon:
                 return True
         if not message:
             return True
+        if not self.busy and source_signature() != self.signature:
+            self.server.close()
+            os.unlink(SOCKET_PATH)
+            os.execv(sys.executable, [sys.executable, str(Path(__file__).resolve()), *message])
         if message[0] == "alttab" and len(message) == 2:
             GLib.idle_add(self.alttab, message[1])
         elif message[0] == "menu":
@@ -103,7 +119,12 @@ def main():
     except BlockingIOError:
         return 0
     signal.signal(signal.SIGTERM, signal.SIG_DFL)
-    UiDaemon()
+    daemon = UiDaemon()
+    replay = sys.argv[1:]
+    if replay and replay[0] == "alttab" and len(replay) == 2:
+        GLib.idle_add(daemon.alttab, replay[1])
+    elif replay and replay[0] == "menu":
+        GLib.idle_add(daemon.menu)
     Gtk.main()
     return 0
 
