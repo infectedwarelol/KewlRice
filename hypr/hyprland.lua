@@ -493,6 +493,7 @@ local backspaceKeycode           = 22
 local nonRepeatingKeycodes       = { [37] = true, [50] = true, [62] = true, [64] = true, [66] = true, [105] = true, [108] = true, [133] = true, [134] = true }
 local repeatingKeycode           = nil
 local repeatGeneration           = 0
+hl.exec_cmd(terminalKeyRepeat .. " stop-all")
 local function stopTerminalKeyRepeat()
     if repeatingKeycode then
         hl.exec_cmd(terminalKeyRepeat .. " stop " .. repeatingKeycode .. " " .. repeatGeneration)

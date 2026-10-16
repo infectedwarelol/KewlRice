@@ -5,11 +5,28 @@ generation="$3"
 sound="$4"
 state_dir="${XDG_RUNTIME_DIR:-/tmp}/terminal-key-repeat"
 stop_marker="$state_dir/stop-$keycode-$generation"
+active_file="$state_dir/active"
 
 mkdir -p "$state_dir"
 
+stop_active() {
+    local pid
+    [ -r "$active_file" ] || return 0
+    read -r pid < "$active_file" || return 0
+    [[ "$pid" =~ ^[0-9]+$ ]] && [ "$pid" != "$$" ] || return 0
+    if grep -qa "terminal-key-repeat" "/proc/$pid/cmdline" 2>/dev/null; then
+        kill "$pid" 2>/dev/null
+    fi
+}
+
 if [ "$action" = "stop" ]; then
     : > "$stop_marker"
+    exit 0
+fi
+
+if [ "$action" = "stop-all" ]; then
+    stop_active
+    rm -f "$active_file" "$state_dir"/stop-*
     exit 0
 fi
 
@@ -22,6 +39,8 @@ for marker in "$state_dir"/stop-*; do
 done
 
 [ -f "$sound" ] || exit 1
+stop_active
+echo "$$" > "$active_file"
 pw-play "$sound" &
 
 settings_cache="$state_dir/settings"
@@ -56,3 +75,4 @@ for ((count = 0; count < 3000; count++)); do
 done
 
 rm -f "$stop_marker"
+[ "$(cat "$active_file" 2>/dev/null)" = "$$" ] && rm -f "$active_file"
