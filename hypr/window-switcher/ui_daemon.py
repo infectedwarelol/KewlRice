@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import ctypes
 import fcntl
 import os
 import signal
@@ -27,8 +28,17 @@ from keypress_tracker import LOCK_FILE, clear_presses
 from window_switcher import STALE_PRESS_SECONDS, run_switcher
 
 SOURCE_FILES = [path for directory in (HERE, THEME_SWITCH_DIR, POPUPS_DIR) for path in directory.glob("*.py")]
+TRIM_DELAY_MS = 500
 SOCKET_PATH = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.sock")
 DAEMON_LOCK = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.lock")
+
+
+def release_memory():
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except (OSError, AttributeError):
+        pass
+    return False
 
 
 def source_signature():
@@ -94,6 +104,7 @@ class UiDaemon:
             finally:
                 clear_presses()
                 self.busy = None
+        GLib.timeout_add(TRIM_DELAY_MS, release_memory)
         return False
 
     def menu(self):
@@ -110,6 +121,7 @@ class UiDaemon:
             name = None
         finally:
             self.busy = None
+        GLib.timeout_add(TRIM_DELAY_MS, release_memory)
         if name:
             process = subprocess.Popen(
                 [sys.executable, str(THEME_SWITCH_DIR / "theme_switch.py"), name], stdin=subprocess.DEVNULL,
