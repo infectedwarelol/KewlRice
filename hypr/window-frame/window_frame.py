@@ -41,7 +41,9 @@ EVENT_DELAY_MS = 30
 SETTLE_DELAY_MS = 320
 POLL_INTERVAL_MS = 400
 INSET = 5
-CORNER = 22
+CORNER = 28
+CENTER_GAP = 34
+SIDE_EMBLEM_HEIGHT = 320
 
 
 def hex_to_rgb(color):
@@ -362,6 +364,136 @@ STYLES = {
 }
 
 
+def ornate_center(cr, size):
+    for offset, radius in ((-0.55, 0.1), (0.0, 0.2), (0.55, 0.1)):
+        diamond(cr, offset * size, 0, radius * size)
+    cr.move_to(-1.1 * size, 0)
+    cr.curve_to(-0.9 * size, -0.35 * size, -0.75 * size, -0.35 * size, -0.7 * size, 0)
+    cr.move_to(1.1 * size, 0)
+    cr.curve_to(0.9 * size, -0.35 * size, 0.75 * size, -0.35 * size, 0.7 * size, 0)
+    cr.stroke()
+
+
+def neon_center(cr, size):
+    for offset in (-0.25, 0.25):
+        cr.move_to(-0.6 * size + offset * size, -0.25 * size)
+        cr.line_to(offset * size, 0.15 * size)
+        cr.line_to(0.6 * size + offset * size, -0.25 * size)
+    cr.stroke()
+
+
+def gothic_center(cr, size):
+    cr.move_to(0, -0.55 * size)
+    cr.line_to(0.18 * size, 0)
+    cr.line_to(0, 0.55 * size)
+    cr.line_to(-0.18 * size, 0)
+    cr.close_path()
+    cr.fill()
+    cr.move_to(-0.5 * size, 0)
+    cr.line_to(0.5 * size, 0)
+    cr.stroke()
+
+
+def frost_center(cr, size):
+    for step in range(6):
+        angle = step * math.pi / 3
+        cr.move_to(0, 0)
+        cr.line_to(math.cos(angle) * 0.42 * size, math.sin(angle) * 0.42 * size)
+    cr.stroke()
+    cr.arc(0, 0, 0.08 * size, 0, 2 * math.pi)
+    cr.fill()
+
+
+def hud_center(cr, size):
+    cr.rectangle(-0.7 * size, -0.12 * size, 1.4 * size, 0.24 * size)
+    cr.stroke()
+    for step in range(4):
+        cr.rectangle(-0.55 * size + step * 0.32 * size, -0.05 * size, 0.18 * size, 0.1 * size)
+    cr.fill()
+
+
+def vine_center(cr, size):
+    for side in (-1, 1):
+        cr.save()
+        cr.translate(side * 0.32 * size, -0.05 * size)
+        cr.rotate(side * 0.5)
+        cr.scale(0.32 * size, 0.13 * size)
+        cr.arc(0, 0, 1, 0, 2 * math.pi)
+        cr.restore()
+        cr.fill()
+    cr.arc(0, 0.05 * size, 0.1 * size, 0, 2 * math.pi)
+    cr.fill()
+
+
+def constellation_center(cr, size):
+    star(cr, 0, 0, 0.3 * size)
+    star(cr, -0.65 * size, 0.05 * size, 0.12 * size)
+    star(cr, 0.65 * size, 0.05 * size, 0.12 * size)
+
+
+def celtic_center(cr, size):
+    for offset in (-0.22, 0.22):
+        cr.arc(offset * size, 0, 0.3 * size, 0, 2 * math.pi)
+        cr.stroke()
+
+
+def flame_center(cr, size):
+    cr.move_to(0, -0.5 * size)
+    cr.curve_to(0.3 * size, -0.15 * size, 0.24 * size, 0.2 * size, 0, 0.25 * size)
+    cr.curve_to(-0.24 * size, 0.2 * size, -0.3 * size, -0.15 * size, 0, -0.5 * size)
+    cr.fill()
+    for offset in (-0.45, 0.45):
+        cr.arc(offset * size, -0.15 * size, 0.06 * size, 0, 2 * math.pi)
+        cr.fill()
+
+
+def deco_center(cr, size):
+    for step in range(7):
+        angle = math.pi + step * math.pi / 6
+        cr.move_to(0, 0.1 * size)
+        cr.line_to(math.cos(angle) * 0.55 * size, 0.1 * size + math.sin(angle) * 0.55 * size)
+    cr.stroke()
+
+
+def synth_center(cr, size):
+    cr.arc(0, 0.1 * size, 0.38 * size, math.pi, 2 * math.pi)
+    cr.close_path()
+    cr.fill()
+    cr.save()
+    cr.set_operator(cairo.OPERATOR_CLEAR)
+    for step in range(3):
+        cr.rectangle(-0.4 * size, -0.02 * size - step * 0.1 * size, 0.8 * size, 0.035 * size)
+    cr.fill()
+    cr.restore()
+
+
+def retro_center(cr, size):
+    for offset in (0.0, 0.18):
+        cr.new_sub_path()
+        cr.arc(-0.4 * size + 0.1 * size, -0.1 * size + offset * size, 0.1 * size, math.pi / 2, 3 * math.pi / 2)
+        cr.arc(0.4 * size - 0.1 * size, -0.1 * size + offset * size, 0.1 * size, -math.pi / 2, math.pi / 2)
+        cr.close_path()
+        cr.stroke()
+
+
+def ribbon_center(cr, size):
+    heart = 0.3 * size
+    cr.move_to(0, heart * 0.9)
+    cr.curve_to(-heart * 1.3, -heart * 0.1, -heart * 0.5, -heart * 1.0, 0, -heart * 0.35)
+    cr.curve_to(heart * 0.5, -heart * 1.0, heart * 1.3, -heart * 0.1, 0, heart * 0.9)
+    cr.fill()
+    for offset in (-0.7, 0.7):
+        cr.arc(offset * size, 0, 0.07 * size, 0, 2 * math.pi)
+        cr.fill()
+
+
+CENTERS = {
+    "ornate": ornate_center, "neon": neon_center, "gothic": gothic_center, "frost": frost_center, "hud": hud_center,
+    "vine": vine_center, "constellation": constellation_center, "celtic": celtic_center, "flame": flame_center,
+    "deco": deco_center, "synth": synth_center, "retro": retro_center, "ribbon": ribbon_center,
+}
+
+
 class FrameOverlay:
     def __init__(self, gdk_monitor, colors):
         self.gdk_monitor = gdk_monitor
@@ -447,35 +579,46 @@ class FrameOverlay:
 
     def draw_frame(self, cr, x, y, width, height, focused):
         accent, primary = self.colors["accent"], self.colors["primary"]
-        corner, edge = STYLES.get(self.colors["style"], STYLES["ornate"])
+        style = self.colors["style"] if self.colors["style"] in STYLES else "ornate"
+        corner, edge = STYLES[style]
+        center = CENTERS[style]
         alpha = 1.0 if focused else 0.55
         left, top = x + INSET, y + INSET
         right, bottom = x + width - INSET, y + height - INSET
         span = CORNER * 1.9
+        middle_x, middle_y = (left + right) / 2, (top + bottom) / 2
+        sides = height >= SIDE_EMBLEM_HEIGHT
         cr.save()
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
         cr.set_line_join(cairo.LINE_JOIN_ROUND)
-        edges = (((left + span, top), (right - span, top)), ((left + span, bottom), (right - span, bottom)),
-                 ((left, top + span), (left, bottom - span)), ((right, top + span), (right, bottom - span)))
-        if edge == "glow":
-            cr.set_line_width(4.0)
-            cr.set_source_rgba(*accent, 0.18 * alpha)
-            self.stroke_edges(cr, edges)
+        edges = [
+            ((left + span, top), (middle_x - CENTER_GAP, top)), ((middle_x + CENTER_GAP, top), (right - span, top)),
+            ((left + span, bottom), (middle_x - CENTER_GAP, bottom)), ((middle_x + CENTER_GAP, bottom), (right - span, bottom)),
+        ]
+        if sides:
+            edges += [
+                ((left, top + span), (left, middle_y - CENTER_GAP)), ((left, middle_y + CENTER_GAP), (left, bottom - span)),
+                ((right, top + span), (right, middle_y - CENTER_GAP)), ((right, middle_y + CENTER_GAP), (right, bottom - span)),
+            ]
+        else:
+            edges += [((left, top + span), (left, bottom - span)), ((right, top + span), (right, bottom - span))]
+        inset = 4.5
+        cr.set_line_width(1.0)
+        cr.set_source_rgba(*primary, (0.85 if edge == "offset" else 0.5) * alpha)
+        cr.rectangle(left + inset, top + inset, right - left - 2 * inset, bottom - top - 2 * inset)
+        cr.stroke()
         if edge == "dashed":
             cr.set_dash([10.0, 6.0])
         elif edge == "dotted":
             cr.set_dash([0.1, 7.0])
-            cr.set_line_width(2.4)
-        cr.set_line_width(cr.get_line_width() if edge == "dotted" else 1.0)
-        cr.set_source_rgba(*accent, 0.75 * alpha)
+        cr.set_line_width(2.4 if edge == "dotted" else 1.6 if edge == "glow" else 1.2)
+        cr.set_source_rgba(*accent, 0.85 * alpha)
         self.stroke_edges(cr, edges)
         cr.set_dash([])
-        if edge in ("double", "offset"):
-            inset = 3.5
-            cr.set_line_width(1.0)
-            cr.set_source_rgba(*primary, (0.8 if edge == "offset" else 0.45) * alpha)
-            cr.rectangle(left + inset, top + inset, right - left - 2 * inset, bottom - top - 2 * inset)
-            cr.stroke()
+        for start, end in edges:
+            for point in (start, end):
+                cr.arc(point[0], point[1], 1.8, 0, 2 * math.pi)
+                cr.fill()
         cr.set_line_width(1.6)
         cr.set_source_rgba(*accent, alpha)
         for corner_x, corner_y, scale_x, scale_y in ((left, top, 1, 1), (right, top, -1, 1), (left, bottom, 1, -1), (right, bottom, -1, -1)):
@@ -483,6 +626,15 @@ class FrameOverlay:
             cr.translate(corner_x, corner_y)
             cr.scale(scale_x, scale_y)
             corner(cr, CORNER)
+            cr.restore()
+        emblems = [(middle_x, top, 0.0), (middle_x, bottom, math.pi)]
+        if sides:
+            emblems += [(left, middle_y, -math.pi / 2), (right, middle_y, math.pi / 2)]
+        for emblem_x, emblem_y, angle in emblems:
+            cr.save()
+            cr.translate(emblem_x, emblem_y)
+            cr.rotate(angle)
+            center(cr, CORNER)
             cr.restore()
         cr.restore()
 
