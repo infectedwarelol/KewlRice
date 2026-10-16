@@ -17,10 +17,8 @@ def time_of_day(hour):
 
 
 def sun_direction(hour):
-    progress = min(1.0, max(0.0, (hour - 5) / 15))
-    azimuth = math.radians(-70 + 140 * progress)
-    height = 0.25 + 0.45 * math.sin(math.pi * progress)
-    x, y, z = math.sin(azimuth), height, 0.75
+    angle = 2 * math.pi * (hour - 13.5) / 24
+    x, y, z = math.sin(angle), 0.35 + 0.15 * max(0.0, math.cos(angle)), math.cos(angle)
     length = math.sqrt(x * x + y * y + z * z)
     return x / length, y / length, z / length
 
