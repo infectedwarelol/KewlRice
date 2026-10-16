@@ -39,8 +39,8 @@ HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}")
 STYLE_KEYS = {"style": re.compile(r"plain|ornate|neon|gothic|frost|hud|vine|constellation|celtic|flame|deco|synth|retro|ribbon"), "terminal_padding": re.compile(r"[0-9]{1,2}")}
 STYLE_DEFAULTS = {"style": "plain", "terminal_padding": "0"}
 WINDOW_FRAME = CONFIG_DIR / "hypr" / "window-frame" / "window_frame.py"
-WALLPAPER_TRANSITION = CONFIG_DIR / "hypr" / "theme-switch" / "wallpaper_transition.py"
-TRANSITION_READY_SECONDS = 1.5
+THEME_TRANSITION = CONFIG_DIR / "hypr" / "theme-switch" / "theme_transition.py"
+TRANSITION_READY_SECONDS = 0.8
 THEME_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 PLACEHOLDER = re.compile(r"\{\{\s*([a-z0-9_]+(?:\|[a-z0-9_]+)*)(?:\.(hex|rgb|ansi))?\s*\}\}")
 USAGE = "usage: theme_switch.py <theme-name> | --menu | --restore | --list | --current"
@@ -401,26 +401,31 @@ def swaybg_processes():
     return processes
 
 
-def start_wallpaper_transition(running, wallpaper, palette):
-    if not WALLPAPER_TRANSITION.is_file():
-        return
-    previous = next(
-        (arguments[index + 1] for arguments in running.values() for index, argument in enumerate(arguments[:-1]) if argument == "-i"),
-        None,
-    )
-    if not previous or not Path(previous).is_file() or Path(previous) == Path(wallpaper):
-        return
+def start_theme_transition(palette):
+    if not THEME_TRANSITION.is_file() or not os.environ.get("WAYLAND_DISPLAY"):
+        return None
     try:
         transition = subprocess.Popen(
-            [sys.executable, str(WALLPAPER_TRANSITION), previous, str(wallpaper), palette["accent"]],
-            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, start_new_session=True,
+            [sys.executable, str(THEME_TRANSITION), palette["accent"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, start_new_session=True,
         )
     except OSError:
-        return
+        return None
     ready, _, _ = select.select([transition.stdout], [], [], TRANSITION_READY_SECONDS)
     if ready:
         transition.stdout.readline()
     transition.stdout.close()
+    return transition
+
+
+def finish_theme_transition(transition):
+    if transition is None:
+        return
+    try:
+        transition.stdin.write(b"go\n")
+        transition.stdin.close()
+    except (BrokenPipeError, OSError):
+        pass
 
 
 def set_wallpaper(wallpaper, palette):
@@ -432,8 +437,6 @@ def set_wallpaper(wallpaper, palette):
     running = swaybg_processes()
     if any(arguments[1:] == command[1:] for arguments in running.values()) and len(running) == 1:
         return []
-    if wallpaper:
-        start_wallpaper_transition(running, wallpaper, palette)
     try:
         new_process = subprocess.Popen(
             command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -504,6 +507,7 @@ def start_globe_build(name):
 def apply_theme(name):
     theme_dir, palette = load_palette(name)
     wallpaper = find_wallpaper(theme_dir, palette)
+    transition = start_theme_transition(palette)
     changed = write_theme(name, palette, wallpaper)
     check_contrast(palette)
     if wallpaper is None:
@@ -513,6 +517,7 @@ def apply_theme(name):
     failures += sync_login_screen(palette, wallpaper)
     failures += set_wallpaper(wallpaper, palette)
     failures += sync_window_frame(palette)
+    finish_theme_transition(transition)
     start_globe_build(name)
     return failures
 

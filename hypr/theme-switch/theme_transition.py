@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+import math
+import subprocess
+import sys
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
+gi.require_version("GdkPixbuf", "2.0")
+gi.require_version("GtkLayerShell", "0.1")
+from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, GtkLayerShell
+
+import cairo
+
+SWEEP_SECONDS = 0.55
+EDGE_FRACTION = 0.16
+WAIT_FOR_GO_SECONDS = 4.0
+
+
+def hex_to_rgb(color):
+    color = color.lstrip("#")
+    try:
+        return tuple(int(color[index:index + 2], 16) / 255 for index in (0, 2, 4))
+    except ValueError:
+        return (1.0, 1.0, 1.0)
+
+
+def ease_in_out(progress):
+    return 4 * progress ** 3 if progress < 0.5 else 1 - (-2 * progress + 2) ** 3 / 2
+
+
+def capture_screen():
+    try:
+        data = subprocess.run(["grim", "-t", "ppm", "-"], capture_output=True, timeout=2).stdout
+        loader = GdkPixbuf.PixbufLoader()
+        loader.write(data)
+        loader.close()
+        return loader.get_pixbuf()
+    except (OSError, subprocess.TimeoutExpired, GLib.Error):
+        return None
+
+
+def snapshot_surface(screen, monitor):
+    geometry = monitor.get_geometry()
+    scale = monitor.get_scale_factor()
+    surface = cairo.ImageSurface(cairo.FORMAT_RGB24, geometry.width * scale, geometry.height * scale)
+    surface.set_device_scale(scale, scale)
+    cr = cairo.Context(surface)
+    cr.scale(1 / scale, 1 / scale)
+    Gdk.cairo_set_source_pixbuf(cr, screen, -geometry.x * scale, -geometry.y * scale)
+    cr.paint()
+    surface.flush()
+    return surface
+
+
+class Sweep:
+    def __init__(self, monitor, snapshot, accent):
+        geometry = monitor.get_geometry()
+        self.width, self.height = geometry.width, geometry.height
+        self.snapshot = snapshot
+        self.accent = accent
+        self.started = None
+        self.running = False
+        self.done = False
+        self.shown = False
+        self.window = Gtk.Window()
+        GtkLayerShell.init_for_window(self.window)
+        GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.OVERLAY)
+        GtkLayerShell.set_namespace(self.window, "kewl-theme-transition")
+        GtkLayerShell.set_exclusive_zone(self.window, -1)
+        GtkLayerShell.set_keyboard_mode(self.window, GtkLayerShell.KeyboardMode.NONE)
+        GtkLayerShell.set_monitor(self.window, monitor)
+        for edge in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM, GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+            GtkLayerShell.set_anchor(self.window, edge, True)
+        visual = self.window.get_screen().get_rgba_visual()
+        if visual:
+            self.window.set_visual(visual)
+        self.window.set_app_paintable(True)
+        self.window.connect("draw", self.on_draw)
+        self.window.connect("realize", lambda window: window.input_shape_combine_region(cairo.Region()))
+        self.window.show_all()
+
+    def start(self):
+        self.running = True
+        self.window.add_tick_callback(self.on_tick)
+
+    def on_tick(self, widget, frame_clock):
+        now = frame_clock.get_frame_time() / 1_000_000
+        if self.started is None:
+            self.started = now
+        widget.queue_draw()
+        if now - self.started >= SWEEP_SECONDS:
+            self.done = True
+            return False
+        return True
+
+    def progress(self):
+        if not self.running or self.started is None:
+            return 0.0
+        clock = self.window.get_frame_clock()
+        now = clock.get_frame_time() / 1_000_000 if clock else self.started
+        return ease_in_out(min(1.0, max(0.0, (now - self.started) / SWEEP_SECONDS)))
+
+    def on_draw(self, _widget, cr):
+        self.shown = True
+        cr.set_operator(cairo.OPERATOR_SOURCE)
+        cr.set_source_rgba(0, 0, 0, 0)
+        cr.paint()
+        cr.set_operator(cairo.OPERATOR_OVER)
+        progress = self.progress()
+        if progress >= 1.0:
+            return False
+        edge = EDGE_FRACTION
+        front = -edge + progress * (1 + 2 * edge)
+        mask = cairo.LinearGradient(0, 0, self.width, self.height)
+        mask.add_color_stop_rgba(max(0.0, min(1.0, front - edge)), 0, 0, 0, 0)
+        mask.add_color_stop_rgba(max(0.0, min(1.0, front)), 0, 0, 0, 1)
+        mask.add_color_stop_rgba(1, 0, 0, 0, 1)
+        cr.set_source_surface(self.snapshot, 0, 0)
+        cr.mask(mask)
+        if self.running:
+            glow = cairo.LinearGradient(0, 0, self.width, self.height)
+            peak = math.sin(math.pi * progress)
+            for offset, alpha in ((-edge, 0), (-edge * 0.35, 0.35), (-edge * 0.12, 0.85), (0, 0)):
+                glow.add_color_stop_rgba(max(0.0, min(1.0, front + offset)), *self.accent, alpha * peak)
+            cr.set_source(glow)
+            cr.paint()
+        return False
+
+
+def main(arguments):
+    accent = hex_to_rgb(arguments[0]) if arguments else (1.0, 1.0, 1.0)
+    display = Gdk.Display.get_default()
+    screen = capture_screen()
+    if display is None or screen is None:
+        print("ready", flush=True)
+        return 1
+    sweeps = [
+        Sweep(display.get_monitor(index), snapshot_surface(screen, display.get_monitor(index)), accent)
+        for index in range(display.get_n_monitors())
+    ]
+    state = {"announced": False}
+
+    def announce():
+        if not state["announced"] and all(sweep.shown for sweep in sweeps):
+            state["announced"] = True
+            try:
+                print("ready", flush=True)
+            except BrokenPipeError:
+                pass
+        if all(sweep.done for sweep in sweeps):
+            Gtk.main_quit()
+            return False
+        return True
+
+    def go(*_arguments):
+        for sweep in sweeps:
+            if not sweep.running:
+                sweep.start()
+        return False
+
+    GLib.io_add_watch(sys.stdin.fileno(), GLib.PRIORITY_DEFAULT, GLib.IO_IN | GLib.IO_HUP, go)
+    GLib.timeout_add(16, announce)
+    GLib.timeout_add(int(WAIT_FOR_GO_SECONDS * 1000), go)
+    GLib.timeout_add(int((WAIT_FOR_GO_SECONDS + SWEEP_SECONDS + 1) * 1000), lambda: Gtk.main_quit() or False)
+    Gtk.main()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

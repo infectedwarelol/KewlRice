@@ -114,7 +114,7 @@ chmod +x ~/.config/waybar/memory.sh
 chmod +x ~/.config/hypr/window-frame/window_frame.py
 chmod +x ~/.config/hypr/brave-video/brave_video.py
 chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
-chmod +x ~/.config/hypr/theme-switch/theme_switch.py ~/.config/hypr/theme-switch/wallpaper_transition.py ~/.config/hypr/lock/*.sh ~/.config/hypr/power-menu/power_menu.py ~/.config/hypr/control-center/control_center.py
+chmod +x ~/.config/hypr/theme-switch/theme_switch.py ~/.config/hypr/theme-switch/theme_transition.py ~/.config/hypr/lock/*.sh ~/.config/hypr/power-menu/power_menu.py ~/.config/hypr/control-center/control_center.py
 ~/.config/hypr/theme-switch/theme_switch.py default
 ```
 
@@ -206,7 +206,7 @@ You can also switch from a terminal:
 ~/.config/hypr/theme-switch/theme_switch.py burgundy
 ```
 
-Five themes come with the rice: `default` (the purple look), `burgundy`, `arctic` (icy blue, with calm crystal chime sounds), `slate` (blue-gray space station, with sonar and console sounds) and `meadow` (light green countryside, with kalimba, marimba and bird sounds). They use `~/.config/hypr/wallpapers/arch-waifu-purple.png`, `burgundy-stairs.png`, `arctic-sky.png`, `slate-station.png` and `meadow-hills.png`. Eight more are wallpaper themes: `stardust`, `highland`, `ember`, `dusk`, `lilac`, `citypop`, `blush` and `daydream`, each using a picture of the same name in that folder (from wallhaven.cc). Every theme draws its own outline around terminal windows (neon, gothic, frost, HUD, vines, constellations, celtic knots, flames, art deco, synthwave, retro, ribbons and daydream's ornate frame), and `daydream` also swaps fastfetch for a dotted bar layout. Switching themes reveals the new wallpaper with a circular animation. These pictures aren't included, so put your own there or the theme falls back to a plain color.
+Five themes come with the rice: `default` (the purple look), `burgundy`, `arctic` (icy blue, with calm crystal chime sounds), `slate` (blue-gray space station, with sonar and console sounds) and `meadow` (light green countryside, with kalimba, marimba and bird sounds). They use `~/.config/hypr/wallpapers/arch-waifu-purple.png`, `burgundy-stairs.png`, `arctic-sky.png`, `slate-station.png` and `meadow-hills.png`. Eight more are wallpaper themes: `stardust`, `highland`, `ember`, `dusk`, `lilac`, `citypop`, `blush` and `daydream`, each using a picture of the same name in that folder (from wallhaven.cc). Every theme draws its own outline around terminal windows (neon, gothic, frost, HUD, vines, constellations, celtic knots, flames, art deco, synthwave, retro, ribbons and daydream's ornate frame), and `daydream` also swaps fastfetch for a dotted bar layout. Switching themes sweeps the whole screen over to the new look. These pictures aren't included, so put your own there or the theme falls back to a plain color.
 
 To add a theme, make a folder in `~/.config/kewlrice/themes/` with two files:
 
