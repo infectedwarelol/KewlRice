@@ -497,8 +497,8 @@ def start_globe_build(name):
         return
     try:
         subprocess.Popen(
-            [sys.executable, str(builder), name], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL, start_new_session=True,
+            ["sh", "-c", 'sleep 1.5; exec "$0" "$1" "$2"', sys.executable, str(builder), name],
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
         )
     except OSError:
         pass

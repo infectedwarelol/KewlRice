@@ -13,8 +13,9 @@ from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, GtkLayerShell
 
 import cairo
 
-SWEEP_SECONDS = 0.55
-EDGE_FRACTION = 0.16
+SWEEP_SECONDS = 0.6
+EDGE_WIDTH = 260.0
+GLOW_WIDTH = 90.0
 WAIT_FOR_GO_SECONDS = 4.0
 
 
@@ -27,7 +28,7 @@ def hex_to_rgb(color):
 
 
 def ease_in_out(progress):
-    return 4 * progress ** 3 if progress < 0.5 else 1 - (-2 * progress + 2) ** 3 / 2
+    return 0.5 - 0.5 * math.cos(math.pi * progress)
 
 
 def capture_screen():
@@ -64,6 +65,7 @@ class Sweep:
         self.running = False
         self.done = False
         self.shown = False
+        self.drawn_front = None
         self.window = Gtk.Window()
         GtkLayerShell.init_for_window(self.window)
         GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.OVERLAY)
@@ -85,12 +87,20 @@ class Sweep:
         self.running = True
         self.window.add_tick_callback(self.on_tick)
 
+    def front(self):
+        return -EDGE_WIDTH + self.progress() * (self.width + EDGE_WIDTH + GLOW_WIDTH)
+
     def on_tick(self, widget, frame_clock):
         now = frame_clock.get_frame_time() / 1_000_000
         if self.started is None:
             self.started = now
-        widget.queue_draw()
+        current = self.front()
+        previous = current if self.drawn_front is None else self.drawn_front
+        left = int(min(previous, current) - EDGE_WIDTH - GLOW_WIDTH) - 2
+        right = int(max(previous, current) + GLOW_WIDTH) + 2
+        widget.queue_draw_area(max(0, left), 0, max(1, min(self.width, right) - max(0, left)), self.height)
         if now - self.started >= SWEEP_SECONDS:
+            widget.queue_draw()
             self.done = True
             return False
         return True
@@ -107,25 +117,35 @@ class Sweep:
         cr.set_operator(cairo.OPERATOR_SOURCE)
         cr.set_source_rgba(0, 0, 0, 0)
         cr.paint()
-        cr.set_operator(cairo.OPERATOR_OVER)
-        progress = self.progress()
-        if progress >= 1.0:
+        if self.running and self.progress() >= 1.0:
             return False
-        edge = EDGE_FRACTION
-        front = -edge + progress * (1 + 2 * edge)
-        mask = cairo.LinearGradient(0, 0, self.width, self.height)
-        mask.add_color_stop_rgba(max(0.0, min(1.0, front - edge)), 0, 0, 0, 0)
-        mask.add_color_stop_rgba(max(0.0, min(1.0, front)), 0, 0, 0, 1)
+        front = self.front() if self.running else -EDGE_WIDTH
+        self.drawn_front = front
+        cr.set_operator(cairo.OPERATOR_OVER)
+        cr.rectangle(max(0.0, front), 0, self.width, self.height)
+        cr.set_source_surface(self.snapshot, 0, 0)
+        cr.fill()
+        if not self.running:
+            return False
+        band_left = front - EDGE_WIDTH
+        mask = cairo.LinearGradient(band_left, 0, front, 0)
+        mask.add_color_stop_rgba(0, 0, 0, 0, 0)
         mask.add_color_stop_rgba(1, 0, 0, 0, 1)
+        cr.save()
+        cr.rectangle(band_left, 0, EDGE_WIDTH, self.height)
+        cr.clip()
         cr.set_source_surface(self.snapshot, 0, 0)
         cr.mask(mask)
-        if self.running:
-            glow = cairo.LinearGradient(0, 0, self.width, self.height)
-            peak = math.sin(math.pi * progress)
-            for offset, alpha in ((-edge, 0), (-edge * 0.35, 0.35), (-edge * 0.12, 0.85), (0, 0)):
-                glow.add_color_stop_rgba(max(0.0, min(1.0, front + offset)), *self.accent, alpha * peak)
-            cr.set_source(glow)
-            cr.paint()
+        cr.restore()
+        strength = math.sin(math.pi * self.progress())
+        glow = cairo.LinearGradient(front - GLOW_WIDTH, 0, front + GLOW_WIDTH * 0.35, 0)
+        glow.add_color_stop_rgba(0, *self.accent, 0)
+        glow.add_color_stop_rgba(0.72, *self.accent, 0.45 * strength)
+        glow.add_color_stop_rgba(0.8, 1, 1, 1, 0.55 * strength)
+        glow.add_color_stop_rgba(1, *self.accent, 0)
+        cr.rectangle(front - GLOW_WIDTH, 0, GLOW_WIDTH * 1.35, self.height)
+        cr.set_source(glow)
+        cr.fill()
         return False
 
 
