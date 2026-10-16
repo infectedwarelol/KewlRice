@@ -39,6 +39,7 @@ HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}")
 STYLE_KEYS = {"style": re.compile(r"plain|ornate|neon|gothic|frost|hud|vine|constellation|celtic|flame|deco|synth|retro|ribbon"), "terminal_padding": re.compile(r"[0-9]{1,2}")}
 STYLE_DEFAULTS = {"style": "plain", "terminal_padding": "0"}
 WINDOW_FRAME = CONFIG_DIR / "hypr" / "window-frame" / "window_frame.py"
+PROMPT_DARKEN = 0.18
 THEME_TRANSITION = CONFIG_DIR / "hypr" / "theme-switch" / "theme_transition.py"
 TRANSITION_READY_SECONDS = 0.8
 THEME_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
@@ -210,7 +211,8 @@ def gtk_css_with_import(path):
 
 
 def write_theme(name, palette, wallpaper=None):
-    outputs = render_templates({**palette, **login_colors(palette, wallpaper)}, str(wallpaper) if wallpaper else "")
+    derived = {"prompt": mix_hex(palette["accent"], "#000000", PROMPT_DARKEN)}
+    outputs = render_templates({**palette, **derived, **login_colors(palette, wallpaper)}, str(wallpaper) if wallpaper else "")
     for css_file in GTK_CSS_FILES:
         if css_file.parent.is_dir():
             outputs.setdefault(css_file, gtk_css_with_import(css_file))

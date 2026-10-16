@@ -74,6 +74,13 @@ def colors_modified():
         return None
 
 
+def source_modified():
+    try:
+        return os.stat(os.path.abspath(__file__)).st_mtime_ns
+    except OSError:
+        return None
+
+
 def hyprland_socket(name):
     signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", "")
     return os.path.join(RUNTIME_DIR, "hypr", signature, name)
@@ -363,6 +370,7 @@ class FrameOverlay:
         self.windows = []
         self.active_address = None
         self.state = None
+        self.fullscreen = False
         self.window = Gtk.Window()
         GtkLayerShell.init_for_window(self.window)
         GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.TOP)
@@ -404,6 +412,12 @@ class FrameOverlay:
              window["workspace"]["id"])
             for window in ordered
         ]
+        fullscreen = any(
+            window["fullscreen"] and (window["class"] or "").lower() in TERMINAL_CLASSES for window in ordered
+        )
+        if fullscreen != self.fullscreen:
+            self.fullscreen = fullscreen
+            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.OVERLAY if fullscreen else GtkLayerShell.Layer.TOP)
         state = (monitor["x"], monitor["y"], snapshot, active_address)
         if state == self.state:
             return
@@ -483,6 +497,7 @@ class WindowFrames:
     def __init__(self):
         self.colors = load_colors()
         self.colors_modified = colors_modified()
+        self.source_modified = source_modified()
         display = Gdk.Display.get_default()
         self.overlays = [FrameOverlay(display.get_monitor(index), self.colors) for index in range(display.get_n_monitors())]
         self.pending = None
@@ -535,6 +550,8 @@ class WindowFrames:
         return False
 
     def poll(self):
+        if source_modified() != self.source_modified:
+            os.execv(sys.executable, [sys.executable, os.path.abspath(__file__)])
         modified = colors_modified()
         if modified != self.colors_modified:
             self.colors_modified = modified

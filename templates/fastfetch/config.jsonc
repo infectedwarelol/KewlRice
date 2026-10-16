@@ -2,13 +2,13 @@
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
   "logo": {
     "color": {
-      "1": "1;38;2;{{accent.ansi}}",
+      "1": "1;38;2;{{prompt.ansi}}",
       "2": "38;2;{{primary.ansi}}"
     }
   },
   "display": {
     "color": {
-      "keys": "1;38;2;{{accent.ansi}}",
+      "keys": "1;38;2;{{prompt.ansi}}",
       "title": "1;38;2;{{accent.ansi}}"
     }
   },
