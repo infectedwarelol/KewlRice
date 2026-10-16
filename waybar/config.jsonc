@@ -115,10 +115,12 @@
         "tooltip-format-disconnected": "Offline"
     },
     "cpu": {
+        "interval": 5,
         "format": "󰻠 {usage}%",
         "tooltip": false
     },
     "memory": {
+        "interval": 5,
         "format": "󰍛 {}%"
     },
     "temperature": {
