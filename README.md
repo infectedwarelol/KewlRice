@@ -73,6 +73,8 @@ sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin ma
 
 ## Install
 
+Run `./install.sh` from inside the cloned folder to do everything below in one go, or follow the steps by hand if you want to see what's happening.
+
 1. Get the files:
 
 ```bash
