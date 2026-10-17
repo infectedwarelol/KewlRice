@@ -27,7 +27,6 @@ tooltip label {
 
 #custom-logo,
 #controls,
-#media,
 #datetime,
 #status {
     background-color: alpha(@kewl_background, 0.72);
@@ -54,7 +53,6 @@ tooltip label {
 
 #media {
     margin-left: 6px;
-    padding: 0 12px 0 5px;
 }
 
 #image.album-art {
@@ -64,6 +62,13 @@ tooltip label {
 #custom-now-playing {
     font-size: 11px;
     color: @kewl_foreground;
+}
+
+#custom-now-playing:not(.stopped) {
+    background-color: alpha(@kewl_background, 0.72);
+    border: 1px solid alpha(@kewl_foreground, 0.08);
+    border-radius: 999px;
+    padding: 0 12px 0 5px;
 }
 
 #custom-now-playing.paused {
@@ -173,6 +178,27 @@ tooltip label {
 
 #custom-weather.unavailable {
     color: alpha(@kewl_foreground, 0.4);
+}
+
+#taskbar {
+    margin-left: 6px;
+}
+
+#taskbar item {
+    padding: 4px 6px;
+    margin: 5px 1px;
+    border-radius: 999px;
+    background-color: alpha(@kewl_background, 0.72);
+    border: 1px solid alpha(@kewl_foreground, 0.08);
+}
+
+#taskbar item.active {
+    background-color: alpha(@kewl_accent, 0.25);
+    border-color: alpha(@kewl_accent, 0.4);
+}
+
+#taskbar item:hover {
+    background-color: alpha(@kewl_accent, 0.25);
 }
 
 #tray > .needs-attention {

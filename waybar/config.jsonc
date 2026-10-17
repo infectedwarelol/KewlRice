@@ -9,7 +9,8 @@
     "modules-left": [
         "custom/logo",
         "group/controls",
-        "group/media"
+        "group/media",
+        "wlr/taskbar"
     ],
     "modules-center": [
         "group/datetime"
@@ -58,6 +59,16 @@
         "return-type": "json",
         "escape": false,
         "on-click": "~/.config/hypr/popups/popup_request.py player"
+    },
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 18,
+        "icon-theme": "WhiteSur",
+        "spacing": 4,
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-middle": "close",
+        "ignore-list": ["waybar"]
     },
     "group/datetime": {
         "orientation": "horizontal",
