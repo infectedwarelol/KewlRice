@@ -34,7 +34,7 @@ And the Alt+Tab planet in every theme, by day and by night:
 
 ![The Alt+Tab globe in every theme, day and night](screenshots/alttab-themes.jpg)
 
-The wallpapers in the screenshots aren't included, so pick your own.
+The wallpapers for all 13 themes are included in `wallpapers/`.
 
 ## What you get
 
@@ -63,13 +63,15 @@ The wallpapers in the screenshots aren't included, so pick your own.
 
 ## What you need
 
-Arch Linux with Hyprland 0.56 or newer. This config uses the new Lua config file, so older versions won't work.
+A fresh Arch Linux install with Hyprland already set up (0.56 or newer — this config uses the new Lua config file, so older versions won't work).
 
 Install the packages:
 
 ```bash
-sudo pacman -S --needed hyprland waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg
+sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg unzip
 ```
+
+`base-devel` is needed to compile the Alt+Tab globe the first time you switch theme, and `git` to clone this repo and the icon theme below.
 
 ## Install
 
@@ -120,6 +122,8 @@ cp konsole/konsolerc dolphin/dolphinrc ~/.config/
 cp applications/snipping-tool.desktop ~/.local/share/applications/
 cp -r themes templates ~/.config/kewlrice/
 cp -r hypr/sounds ~/.config/kewlrice/sounds
+mkdir -p ~/.config/hypr/wallpapers
+cp wallpapers/* ~/.config/hypr/wallpapers/
 chmod +x ~/.config/hypr/window-switcher/window_switcher.py ~/.config/hypr/window-switcher/ui_daemon.py
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
@@ -151,7 +155,7 @@ curl -Lo ~/.cache/kewlrice/geodata/ne_50m_land.geojson https://raw.githubusercon
 curl -Lo ~/.cache/kewlrice/geodata/ne_50m_populated_places_simple.geojson https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_populated_places_simple.geojson
 ```
 
-The globe for each theme gets built in the background the first time you switch to it (a few seconds). It's drawn live by a tiny C program that gets compiled the first time, so you need a C compiler (`sudo pacman -S --needed base-devel`). Until it's ready, Alt+Tab shows a plain sphere.
+The globe for each theme gets built in the background the first time you switch to it (a few seconds). It's drawn live by a tiny C program that gets compiled the first time, using the `base-devel` you installed above. Until it's ready, Alt+Tab shows a plain sphere.
 
 5. For the themed login screen (it follows whatever theme you used last):
 
@@ -240,7 +244,7 @@ You can also switch from a terminal:
 | `blush` | soft pink, ribbon and heart frame, kalimba | `blush.jpg` |
 | `daydream` | pastel clouds, ornate frame, music box, and its own fastfetch layout | `daydream.jpg` |
 
-The pictures aren't included, so put your own there with those names or the theme falls back to a plain color.
+These are already in `~/.config/hypr/wallpapers/` after the install steps above. To add a theme of your own, put a picture there with your theme's name or the theme falls back to a plain color.
 
 To add a theme, make a folder in `~/.config/kewlrice/themes/` with two files:
 
