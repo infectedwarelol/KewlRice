@@ -181,24 +181,22 @@ tooltip label {
 }
 
 #taskbar {
-    margin-right: 6px;
+    margin: 0 10px;
 }
 
 #taskbar item {
-    padding: 7px;
-    margin: 3px 2px;
-    border-radius: 999px;
-    background-color: alpha(@kewl_background, 0.72);
-    border: 1px solid alpha(@kewl_foreground, 0.08);
-}
-
-#taskbar item.active {
-    background-color: alpha(@kewl_accent, 0.25);
-    border-color: alpha(@kewl_accent, 0.4);
+    padding: 6px;
+    margin: 2px;
+    border-radius: 14px;
+    background-color: transparent;
 }
 
 #taskbar item:hover {
-    background-color: alpha(@kewl_accent, 0.25);
+    background-color: alpha(@kewl_foreground, 0.12);
+}
+
+#taskbar item.active {
+    background-color: alpha(@kewl_accent, 0.3);
 }
 
 #tray > .needs-attention {

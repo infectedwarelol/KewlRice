@@ -12,10 +12,10 @@
         "group/media"
     ],
     "modules-center": [
+        "wlr/taskbar",
         "group/datetime"
     ],
     "modules-right": [
-        "wlr/taskbar",
         "group/status"
     ],
     "group/controls": {
@@ -62,9 +62,9 @@
     },
     "wlr/taskbar": {
         "format": "{icon}",
-        "icon-size": 26,
+        "icon-size": 32,
         "icon-theme": "WhiteSur",
-        "spacing": 6,
+        "spacing": 8,
         "tooltip-format": "{title}",
         "on-click": "activate",
         "on-click-middle": "close",
