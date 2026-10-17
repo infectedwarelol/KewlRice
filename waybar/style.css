@@ -181,12 +181,12 @@ tooltip label {
 }
 
 #taskbar {
-    margin-left: 6px;
+    margin-right: 6px;
 }
 
 #taskbar item {
-    padding: 4px 6px;
-    margin: 5px 1px;
+    padding: 7px;
+    margin: 3px 2px;
     border-radius: 999px;
     background-color: alpha(@kewl_background, 0.72);
     border: 1px solid alpha(@kewl_foreground, 0.08);

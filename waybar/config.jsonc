@@ -9,13 +9,13 @@
     "modules-left": [
         "custom/logo",
         "group/controls",
-        "group/media",
-        "wlr/taskbar"
+        "group/media"
     ],
     "modules-center": [
         "group/datetime"
     ],
     "modules-right": [
+        "wlr/taskbar",
         "group/status"
     ],
     "group/controls": {
@@ -62,9 +62,9 @@
     },
     "wlr/taskbar": {
         "format": "{icon}",
-        "icon-size": 18,
+        "icon-size": 26,
         "icon-theme": "WhiteSur",
-        "spacing": 4,
+        "spacing": 6,
         "tooltip-format": "{title}",
         "on-click": "activate",
         "on-click-middle": "close",
