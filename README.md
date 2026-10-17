@@ -1,6 +1,6 @@
 # KewlRice
 
-My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, there are 13 themes that recolor the whole desktop (with their own wallpaper, sounds and terminal frame), little sounds when apps open and close, and Alt+Tab shows your open apps on a spinning planet.
+This is my Hyprland setup on Arch Linux. Everything is see-through with a soft blur, there are 13 themes that recolor the whole desktop (each with its own wallpaper, sounds and terminal frame), little sounds play when apps open and close, and Alt+Tab shows your open apps sitting on a spinning planet.
 
 ## Screenshots
 
@@ -12,7 +12,7 @@ My Hyprland setup on Arch Linux. Everything is see-through with a soft blur, the
 | **Music player and calendar** | **Switching themes** |
 | ![Music player and calendar popups from the bar](screenshots/popups.png) | ![The screen sweeping over to a new theme](screenshots/theme-switch.gif) |
 
-These are in the `daydream` theme. Here are all 13:
+These shots are all in the `daydream` theme. Here are all 13 side by side:
 
 ![All 13 themes](screenshots/themes.gif)
 
@@ -26,44 +26,42 @@ These are in the `daydream` theme. Here are all 13:
 | **daydream** | | | |
 | ![daydream](screenshots/themes/daydream.jpg) | | | |
 
-Every theme draws its own frame around terminal windows:
+Every theme also draws its own frame around terminal windows:
 
 ![The terminal frame of every theme](screenshots/frames.png)
 
-And the Alt+Tab planet in every theme, by day and by night:
+And the Alt+Tab planet looks different in every theme, by day and by night:
 
 ![The Alt+Tab globe in every theme, day and night](screenshots/alttab-themes.jpg)
 
-The wallpapers for all 13 themes are included in `wallpapers/`.
-
 ## What you get
 
-- A floating Waybar at the top made of rounded pills in your theme's colors:
-  - Left: the Arch logo (opens the launcher), control center, volume and media buttons, and a now playing pill with the album cover, song, artist and a progress bar. Click it for a bigger player with the cover, a seek bar and controls
+- A floating Waybar at the top, made of rounded pills in your theme's colors:
+  - Left side: the Arch logo (opens the launcher), control center, volume and media buttons, and a now playing pill with the album cover, song, artist and a progress bar. Click it for a bigger player with the cover, a seek bar and controls
   - Middle: the time with seconds, the date and the weather. Click it for a calendar
-  - Right: tray, network, CPU, RAM in Mb or Gb, temperature, headset battery (turns yellow, then red as it runs low) and power
+  - Right side: tray, network, CPU, RAM in Mb or Gb, temperature, headset battery (turns yellow then red as it runs low) and power
 - 13 themes on Super+Tab. Each one changes the colors everywhere, the wallpaper, the sounds and the frame drawn around your terminals. The whole screen sweeps over to the new look with a soft chime
-- Every app see-through at 80%, and new apps you install get it too
-- Kitty and Konsole see-through in your theme's colors, with btop and cmatrix see-through too. cmatrix rains in your theme's accent color
+- Every app is see-through at 80%, and new apps you install get it too
+- Kitty and Konsole are see-through in your theme's colors, and so are btop and cmatrix. cmatrix rains in your theme's accent color
 - A decorated frame around every terminal window, different for each theme (neon, gothic, frost, sci-fi, vines, constellations, celtic, flames, art deco, synthwave, retro, ribbons and an ornate one), even in fullscreen
 - A launcher on Super+R (press it again to close it)
-- An Alt+Tab switcher where your open apps sit on a glowing Earth in your theme's colors (real coastlines, relief, clouds, shiny oceans and a soft atmosphere) floating in a starfield, with Mac style app icons. Keep tapping Tab to spin it, it goes round forever, and it slowly turns on its own when you wait. The sun follows the real time of day: sunrise and sunset glow orange, and at night the city lights come on. It opens almost instantly
+- An Alt+Tab switcher where your open apps sit on a glowing Earth in your theme's colors (real coastlines, relief, clouds, shiny oceans and a soft atmosphere) floating in a starfield, with Mac style app icons. Keep tapping Tab and it keeps spinning, forever if you want, and it turns slowly on its own when you wait. The sun follows the real time of day, sunrise and sunset glow orange, and at night the city lights come on. It opens almost instantly
 - A clipboard history on Super+V
 - A sound when an app opens or goes fullscreen, and another when it closes
-- A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace, and it keeps clicking while you hold a key). Shortcuts like Alt+Tab stay silent
-- Notifications that go away after 5 seconds
-- System apps like Settings and the volume mixer dark and see-through too
+- A sound when you log in, its own sound when you open the terminal, and a little click for every key you type in the terminal (with a deeper one for Backspace, and it keeps clicking while you hold a key down). Shortcuts like Alt+Tab stay silent
+- Notifications that go away after 5 seconds on their own
+- System apps like Settings and the volume mixer are dark and see-through too
 - Brave turns solid on YouTube and whenever a video is playing, so videos look sharp
-- Discord turns solid while you watch a video in it, then goes back to see-through
-- Steam, Steam games and Minecraft stay solid, so games look the way they should
+- Discord turns solid while you're watching a video in it, then goes back to see-through once you're done
+- Steam, Steam games and Minecraft stay solid, so games look the way they're meant to
 - A snipping tool like on Windows, with drawing, blur and crop
 - fastfetch with a spinning Arch logo and a spin sound every time you open a terminal or run it
-- The fish shell with a pill prompt showing your name, the folder you are in and the time, in the same color as the fastfetch logo
-- French keyboard layout (easy to change, see below)
+- The fish shell with a pill prompt showing your name, the folder you're in and the time, in the same color as the fastfetch logo
+- A French keyboard layout (easy to change, see below)
 
 ## What you need
 
-A fresh Arch Linux install with Hyprland already set up (0.56 or newer — this config uses the new Lua config file, so older versions won't work).
+A fresh Arch Linux install with Hyprland already set up (0.56 or newer, since this config uses the new Lua config file and older versions won't work).
 
 Install the packages:
 
@@ -71,7 +69,7 @@ Install the packages:
 sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg unzip
 ```
 
-`base-devel` is needed to compile the Alt+Tab globe the first time you switch theme, and `git` to clone this repo and the icon theme below.
+`base-devel` is there to compile the Alt+Tab globe the first time you switch theme, and `git` is for cloning this repo and the icon theme further down.
 
 ## Install
 
@@ -90,9 +88,9 @@ unzip KewlRice.zip
 cd KewlRice
 ```
 
-If `unzip` is missing, install it with `sudo pacman -S unzip`. Every step below works the same from inside that folder.
+Every step below works the same from inside that folder.
 
-2. Back up your old configs, because the next step replaces them:
+2. Back up your old configs first, because the next step replaces them:
 
 ```bash
 mkdir -p ~/rice-backup
@@ -101,7 +99,7 @@ cp ~/.bashrc ~/rice-backup/bashrc 2>/dev/null
 cp -r ~/.config/fish ~/rice-backup/ 2>/dev/null
 ```
 
-To go back to your old setup later, copy those files back from `~/rice-backup`.
+If you ever want to go back to your old setup, just copy those files back from `~/rice-backup`.
 
 3. Copy everything into place:
 
@@ -145,7 +143,7 @@ git clone --depth 1 https://github.com/vinceliuice/WhiteSur-icon-theme.git /tmp/
 /tmp/WhiteSur-icon-theme/install.sh -d ~/.local/share/icons
 ```
 
-Apps that WhiteSur doesn't know get a white Mac style tile around their normal icon.
+Apps that WhiteSur doesn't recognize just get a white Mac style tile around their normal icon.
 
 The Alt+Tab globe is drawn from real map data (public domain, from Natural Earth). Download it once:
 
@@ -155,7 +153,7 @@ curl -Lo ~/.cache/kewlrice/geodata/ne_50m_land.geojson https://raw.githubusercon
 curl -Lo ~/.cache/kewlrice/geodata/ne_50m_populated_places_simple.geojson https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_populated_places_simple.geojson
 ```
 
-The globe for each theme gets built in the background the first time you switch to it (a few seconds). It's drawn live by a tiny C program that gets compiled the first time, using the `base-devel` you installed above. Until it's ready, Alt+Tab shows a plain sphere.
+The globe for each theme gets built in the background the first time you switch to it, which takes a few seconds. It's drawn live by a tiny C program that gets compiled the first time, using the `base-devel` you installed above. Until it's ready, Alt+Tab just shows a plain sphere.
 
 5. For the themed login screen (it follows whatever theme you used last):
 
@@ -218,7 +216,7 @@ In the Super + A view you can hold Super and drag an app with the left mouse but
 
 ## Themes
 
-Press Super + Tab to pick a theme. The colors of the borders, bar, launcher, Alt+Tab menu, clipboard, terminal, prompt, cmatrix, notifications, snipping tool and GTK apps change right away, and so does the wallpaper. The theme you pick stays after a reboot.
+Press Super + Tab to pick a theme. The colors of the borders, bar, launcher, Alt+Tab menu, clipboard, terminal, prompt, cmatrix, notifications, snipping tool and GTK apps all change right away, and so does the wallpaper. Whatever theme you pick stays after a reboot.
 
 You can also switch from a terminal:
 
@@ -244,23 +242,23 @@ You can also switch from a terminal:
 | `blush` | soft pink, ribbon and heart frame, kalimba | `blush.jpg` |
 | `daydream` | pastel clouds, ornate frame, music box, and its own fastfetch layout | `daydream.jpg` |
 
-These are already in `~/.config/hypr/wallpapers/` after the install steps above. To add a theme of your own, put a picture there with your theme's name or the theme falls back to a plain color.
+These wallpapers are included in `wallpapers/` and get copied into `~/.config/hypr/wallpapers/` during the install steps above. To add a theme of your own, drop a picture there with your theme's name, otherwise it falls back to a plain color.
 
 To add a theme, make a folder in `~/.config/kewlrice/themes/` with two files:
 
-- `palette`, with one `name=#rrggbb` per line. Copy `themes/burgundy/palette` and change the colors. It needs `background`, `foreground`, `surface`, `primary`, `secondary`, `accent`, `urgent`, `border_active`, `border_inactive` and `color0` to `color15` for the terminal.
+- `palette`, with one `name=#rrggbb` per line. Copy `themes/burgundy/palette` and change the colors. It needs `background`, `foreground`, `surface`, `primary`, `secondary`, `accent`, `urgent`, `border_active`, `border_inactive` and `color0` through `color15` for the terminal.
 - `wallpaper.png` (or `.jpg`). You can also point to a picture somewhere else with a `wallpaper=` line in `palette`.
-- Optionally `style=` with one of `plain`, `ornate`, `neon`, `gothic`, `frost`, `hud`, `vine`, `constellation`, `celtic`, `flame`, `deco`, `synth`, `retro` or `ribbon` for the terminal outline, and `terminal_padding=14` to keep text inside it.
-- Optional: a `sounds` folder with any of the files from `hypr/sounds` (same names, for example `sounds/login.mp3` or `sounds/keys/terminal-key.wav`). Sounds you leave out use the normal ones.
+- Optionally `style=` set to one of `plain`, `ornate`, `neon`, `gothic`, `frost`, `hud`, `vine`, `constellation`, `celtic`, `flame`, `deco`, `synth`, `retro` or `ribbon` for the terminal outline, and `terminal_padding=14` to keep text inside it.
+- Optionally a `sounds` folder with any of the files from `hypr/sounds` (same names, for example `sounds/login.mp3` or `sounds/keys/terminal-key.wav`). Any sounds you leave out just use the normal ones.
 
 The new theme shows up in the Super + Tab menu right away. The files in `templates/` decide which color goes where in each app.
 
 ## Lock screen, power menu and control center
 
-- Super + L locks the screen: your wallpaper blurred, a big clock, the date and the song that's playing.
-- Super + Esc opens the power menu. Log out, restart and shut down ask you to press a second time so you can't hit them by accident. Each one has its own sound.
+- Super + L locks the screen: your wallpaper blurred, a big clock, the date and whatever song is playing.
+- Super + Esc opens the power menu. Log out, restart and shut down all ask you to press a second time so you don't hit them by accident. Each one has its own sound.
 - The gear button at the left of the bar opens the control center: volume and microphone, network, do not disturb, the song that's playing with its cover and controls, and lock and power buttons.
-- The login screen, the lock screen, the power menu and the control center all follow the theme you picked last, by themselves.
+- The login screen, the lock screen, the power menu and the control center all follow whatever theme you picked last, on their own.
 
 ## Changing things
 
@@ -272,4 +270,4 @@ The new theme shows up in the Super + Tab menu right away. The files in `templat
 - The spin sound: swap `~/.config/hypr/sounds/spin.wav`.
 - The theme switch chime: swap `~/.config/hypr/sounds/theme-switch.mp3`.
 - Apps that stay solid: add their class to the `negative:` list next to the `opacity` rule in `hyprland.lua`. Run `hyprctl clients` to find an app's class.
-- Kitty and Konsole stay out of the see-through rule because they already make only their background see-through, so the text stays sharp.
+- Kitty and Konsole stay out of the see-through rule because they already make only their background see-through on their own, so the text stays sharp.
