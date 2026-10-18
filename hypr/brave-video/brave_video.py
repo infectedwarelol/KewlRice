@@ -84,6 +84,25 @@ def watch_discord(events, discord_open):
         time.sleep(1)
 
 
+def launched_by_steam(pid):
+    try:
+        with open(f"/proc/{pid}/environ", "rb") as environ:
+            return any(entry.startswith((b"SteamAppId=", b"SteamGameId=")) for entry in environ.read().split(b"\0"))
+    except (OSError, TypeError):
+        return False
+
+
+def solidify_steam_game(address):
+    try:
+        clients = json.loads(hyprctl("clients", "-j"))
+    except json.JSONDecodeError:
+        return
+    for client in clients:
+        if client["address"] == address and launched_by_steam(client.get("pid")):
+            set_opacity(address, SOLID)
+            return
+
+
 def set_opacity(address, value):
     for prop in PROPS:
         hyprctl(
@@ -146,6 +165,7 @@ def main():
             discord_playing = value
         elif source == "openwindow":
             if value.split(",", 3)[2:3] not in ([BRAVE_CLASS], [DISCORD_CLASS]):
+                solidify_steam_game("0x" + value.split(",", 1)[0])
                 continue
         elif source in ("closewindow", "windowtitlev2"):
             if "0x" + value.split(",", 1)[0] not in applied:
