@@ -8,6 +8,7 @@ set -g _primary '155;89;255'
 set -g _foreground '230;237;243'
 set -g _on_primary '20;16;30'
 set -g _accent '#d090ff'
+set -g _directory $_primary
 test -r $HOME/.config/kewlrice/colors.fish; and source $HOME/.config/kewlrice/colors.fish
 
 alias grep 'grep --color=auto'
@@ -15,7 +16,7 @@ alias grep 'grep --color=auto'
 function fish_prompt
     set -l directory (string replace -r "^$HOME" '~' -- $PWD)
     printf '\e[0;38;2;%sm\e[1;38;2;%s;48;2;%sm  %s ' $_primary $_on_primary $_primary $USER
-    printf '\e[22;38;2;%s;48;2;%sm\e[1;38;2;%s;48;2;%sm %s ' $_primary $_foreground $_primary $_foreground $directory
+    printf '\e[22;38;2;%s;48;2;%sm\e[1;38;2;%s;48;2;%sm %s ' $_primary $_foreground $_directory $_foreground $directory
     printf '\e[22;38;2;%s;48;2;%sm\e[1;38;2;%s;48;2;%sm  %s ' $_foreground $_primary $_on_primary $_primary (date +%H:%M)
     printf '\e[0;38;2;%sm\e[0m ' $_primary
 end

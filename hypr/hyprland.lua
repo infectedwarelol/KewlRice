@@ -14,6 +14,8 @@ local themeColors = {
     border_active   = "rgba(d090ffee)",
     border_gradient = "rgba(9b59ffee)",
     border_inactive = "rgba(595959aa)",
+    blur            = "on",
+    opacity         = "0.8",
 }
 local themeColorsLoaded, loadedThemeColors = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/colors.lua")
 if themeColorsLoaded and type(loadedThemeColors) == "table" then
@@ -72,7 +74,7 @@ hl.config({
         },
 
         blur = {
-            enabled   = true,
+            enabled   = themeColors.blur ~= "off",
             size      = 3,
             passes    = 3,
             vibrancy  = 0.1696,
@@ -601,7 +603,7 @@ hl.window_rule({
     name  = "transparent-apps",
     match = { class = "negative:^(kitty|org\\.kde\\.konsole|Minecraft.*|com\\.mojang\\.minecraft|mpv|snipping-tool|steam|steam_app_.*|steamwebhelper|crunchyroll)$" },
 
-    opacity = "0.8 0.8 0.8",
+    opacity = string.format("%s %s %s", themeColors.opacity, themeColors.opacity, themeColors.opacity),
 })
 
 hl.layer_rule({

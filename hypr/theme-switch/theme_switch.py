@@ -36,8 +36,8 @@ REQUIRED_KEYS = (
     "border_active", "border_inactive",
 ) + tuple(f"color{index}" for index in range(16))
 HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}")
-STYLE_KEYS = {"style": re.compile(r"plain|ornate|neon|gothic|frost|hud|vine|constellation|celtic|flame|deco|synth|retro|ribbon"), "terminal_padding": re.compile(r"[0-9]{1,2}")}
-STYLE_DEFAULTS = {"style": "plain", "terminal_padding": "0"}
+STYLE_KEYS = {"style": re.compile(r"plain|ornate|neon|gothic|frost|hud|vine|constellation|celtic|flame|deco|synth|retro|ribbon"), "terminal_padding": re.compile(r"[0-9]{1,2}"), "blur": re.compile(r"on|off"), "opacity": re.compile(r"0\.[0-9]{1,2}|1(\.0{1,2})?")}
+STYLE_DEFAULTS = {"style": "plain", "terminal_padding": "0", "blur": "on", "opacity": "0.8"}
 WINDOW_FRAME = CONFIG_DIR / "hypr" / "window-frame" / "window_frame.py"
 PROMPT_DARKEN = 0.18
 THEME_TRANSITION = CONFIG_DIR / "hypr" / "theme-switch" / "theme_transition.py"
