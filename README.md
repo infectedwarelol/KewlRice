@@ -1,6 +1,6 @@
 # KewlRice
 
-This is my Hyprland setup on Arch Linux. Everything is see-through with a soft blur, there are 22 themes that recolor the whole desktop (each with its own wallpaper, sounds and terminal frame), little sounds play when apps open and close, and Alt+Tab shows your open apps sitting on a spinning planet.
+This is my Hyprland setup on Arch Linux. Everything is see-through with a soft blur, there are 18 themes that recolor the whole desktop (each with its own wallpaper, sounds and terminal frame), little sounds play when apps open and close, and Alt+Tab shows your open apps sitting on a spinning planet.
 
 ## Screenshots
 
@@ -40,7 +40,7 @@ And the Alt+Tab planet looks different in every theme, by day and by night:
   - Left side: the Arch logo (opens the launcher), control center, volume and media buttons, and a now playing pill with the album cover, song, artist and a progress bar. Click it for a bigger player with the cover, a seek bar and controls
   - Middle: the time with seconds, the date and the weather. Click it for a calendar
   - Right side: tray, network, CPU, RAM in Mb or Gb, temperature, headset battery (turns yellow then red as it runs low) and power
-- 22 themes on Super+Tab. Each one changes the colors everywhere, the wallpaper, the sounds and the frame drawn around your terminals. The whole screen sweeps over to the new look with a soft chime
+- 18 themes on Super+Tab. Each one changes the colors everywhere, the wallpaper, the sounds and the frame drawn around your terminals. The whole screen sweeps over to the new look with a soft chime
 - Every app is see-through at 80%, and new apps you install get it too
 - Kitty and Konsole are see-through in your theme's colors, and so are btop and cmatrix. cmatrix rains in your theme's accent color
 - A decorated frame around every terminal window, different for each theme (neon, gothic, frost, sci-fi, vines, constellations, celtic, flames, art deco, synthwave, retro, ribbons and an ornate one), even in fullscreen
@@ -226,7 +226,7 @@ You can also switch from a terminal:
 ~/.config/hypr/theme-switch/theme_switch.py burgundy
 ```
 
-22 themes come with the rice, each with its own sounds:
+18 themes come with the rice, each with its own sounds:
 
 | Theme | Look | Wallpaper in `~/.config/hypr/wallpapers/` |
 |---|---|---|
@@ -245,13 +245,9 @@ You can also switch from a terminal:
 | `daydream` | pastel clouds, ornate frame, music box, and its own fastfetch layout | `daydream.jpg` |
 | `void` | pure black and white, no frame, no blur, white Arch logo, quiet low drones | `void.png` |
 | `abyss` | deep ocean teal, sci-fi frame, sonar pings and underwater rumble | `abyss.jpg` |
-| `sakura` | cherry blossom pink, ribbon frame, koto plucks and wind | `sakura.jpg` |
 | `phosphor` | old CRT green on black, no frame, no blur, relay clicks, hum and typewriter keys | `phosphor.png` |
-| `rain` | noir blue city at night, art deco frame, Rhodes piano and rain | `rain.jpg` |
 | `dune` | sand and terracotta sunset, celtic frame, oud and desert wind | `dune.jpg` |
-| `gold` | black and gold, art deco frame, soft brass and glass clinks | `gold.jpg` |
 | `autumn` | rust and orange leaves, vine frame, acoustic guitar and crunching leaves | `autumn.jpg` |
-| `glacier` | void in reverse, white with black text, no frame, no blur, quiet high drones | `glacier.png` |
 
 These wallpapers are included in `wallpapers/` and get copied into `~/.config/hypr/wallpapers/` during the install steps above. To add a theme of your own, drop a picture there with your theme's name, otherwise it falls back to a plain color.
 
