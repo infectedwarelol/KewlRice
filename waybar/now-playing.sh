@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-format='{{status}}'$'\t''{{title}}'$'\t''{{artist}}'$'\t''{{mpris:length}}'$'\t''{{position}}'
-width=14
+format='{{status}}'$'\t''{{title}}'$'\t''{{mpris:length}}'$'\t''{{position}}'
 exec 9<> <(:)
 
 escape() {
@@ -13,6 +12,11 @@ escape() {
     printf -v "$2" '%s' "$text"
 }
 
+clock() {
+    local seconds=$(( ${1:-0} / 1000000 ))
+    printf -v "$2" '%02d:%02d' $((seconds / 60)) $((seconds % 60))
+}
+
 shorten() {
     local text="$1" limit="$2"
     if [ "${#text}" -gt "$limit" ]; then
@@ -22,42 +26,30 @@ shorten() {
     fi
 }
 
-clock() {
-    local seconds=$(( ${1:-0} / 1000000 ))
-    printf -v "$2" '%d:%02d' $((seconds / 60)) $((seconds % 60))
-}
-
 previous=""
 while true; do
     metadata=$(playerctl metadata --format "$format" 2>/dev/null)
-    IFS=$'\t' read -r status title artist length position <<< "$metadata"
+    IFS=$'\t' read -r status title length position <<< "$metadata"
     if [[ "$status" != "Playing" && "$status" != "Paused" ]] || [ -z "$title" ]; then
         line='{"text":"","class":"stopped"}'
         delay=3
     else
         [[ "$length" =~ ^[0-9]+$ ]] || length=0
         [[ "$position" =~ ^[0-9]+$ ]] || position=0
-        filled=0
-        [ "$length" -gt 0 ] && filled=$(( position * width / length ))
-        [ "$filled" -gt "$width" ] && filled=$width
-        printf -v done_bar '%*s' "$filled" ''
-        printf -v left_bar '%*s' $((width - filled)) ''
-        done_bar="${done_bar// /━}"
-        left_bar="${left_bar// /━}"
         bare_title="${title%% (*}"
         bare_title="${bare_title%% [*}"
         [ -n "$bare_title" ] || bare_title="$title"
         shorten "$bare_title" 28 short_title
-        label="$short_title"
-        if [ -n "$artist" ]; then
-            shorten "$artist" 14 short_artist
-            label="$label · $short_artist"
+        escape "$short_title" safe_label
+        escape "$title" safe_tooltip
+        time_text=""
+        if [ "$length" -gt 0 ]; then
+            [ "$position" -gt "$length" ] && position=$length
+            clock "$position" elapsed_clock
+            clock "$length" length_clock
+            time_text="  <span fgalpha='60%'>$elapsed_clock / $length_clock</span>"
         fi
-        escape "$label" safe_label
-        escape "$title — $artist" safe_tooltip
-        clock "$position" elapsed
-        clock "$length" total
-        line="{\"text\":\"<span weight='bold'>$safe_label</span>\\n<span size='7.5pt'>${done_bar}<span fgalpha='30%'>${left_bar}</span>  $elapsed/$total</span>\",\"class\":\"${status,,}\",\"tooltip\":\"$safe_tooltip\"}"
+        line="{\"text\":\"<span weight='bold'>$safe_label</span>$time_text\",\"class\":\"${status,,}\",\"tooltip\":\"$safe_tooltip\\nScroll to seek\"}"
         delay=1
     fi
     if [ "$line" != "$previous" ]; then
