@@ -692,3 +692,11 @@ hl.window_rule({
 })
 
 dofile(os.getenv("HOME") .. "/.config/hypr/omarchy_fx.lua")
+
+local windowGrabPlugin = os.getenv("HOME") .. "/.local/share/hyprland/plugins/kewl-window-grab.so"
+local windowGrabFile = io.open(windowGrabPlugin, "r")
+if windowGrabFile then
+    windowGrabFile:close()
+    hl.permission({ binary = windowGrabPlugin, type = "plugin", mode = "allow" })
+    hl.plugin.load(windowGrabPlugin)
+end
