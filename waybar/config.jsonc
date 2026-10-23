@@ -76,8 +76,9 @@
     "group/datetime": {
         "orientation": "horizontal",
         "modules": [
-            "clock",
-            "custom/weather"
+            "custom/weather-icon",
+            "custom/weather",
+            "clock"
         ]
     },
     "custom/logo": {
@@ -182,12 +183,18 @@
         "interval": 1,
         "justify": "center",
         "on-click": "~/.config/hypr/popups/popup_request.py calendar",
-        "format": "<span weight='bold' size='11pt'>{0:%H:%M:%S}</span>\n<span size='7.5pt' fgalpha='70%'>{0:%A, %B %d}</span>",
+        "format": "<span weight='bold' size='11pt'>{0:%H:%M}</span>\n<span size='7.5pt' fgalpha='60%'>{0:%a, %b %d}</span>",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "custom/weather-icon": {
+        "exec": "~/.config/waybar/weather.py icon",
+        "return-type": "json",
+        "interval": 900
     },
     "custom/weather": {
         "exec": "~/.config/waybar/weather.py",
         "return-type": "json",
+        "justify": "center",
         "interval": 900
     },
     "custom/power": {

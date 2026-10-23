@@ -183,18 +183,27 @@ tooltip label {
     padding: 0 14px;
 }
 
-#clock {
-    padding: 0 18px 0 0;
+#custom-weather-icon {
+    padding: 0 8px 0 0;
+    color: @kewl_accent;
+    font-size: 18px;
+}
+
+#custom-weather {
+    padding: 0 14px 0 0;
     color: @kewl_foreground;
     font-size: 11px;
 }
 
-#custom-weather {
+#clock {
+    padding: 0 0 0 14px;
+    margin: 4px 0;
+    border-left: 1px solid alpha(@kewl_foreground, 0.15);
     color: @kewl_foreground;
-    font-size: 15px;
-    font-weight: bold;
+    font-size: 11px;
 }
 
+#custom-weather-icon.unavailable,
 #custom-weather.unavailable {
     color: alpha(@kewl_foreground, 0.4);
 }
