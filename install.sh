@@ -38,7 +38,7 @@ chmod +x ~/.config/waybar/memory.sh ~/.config/waybar/now-playing.sh ~/.config/wa
 chmod +x ~/.config/hypr/popups/popups.py ~/.config/hypr/popups/popup_request.py
 chmod +x ~/.config/hypr/window-frame/window_frame.py
 chmod +x ~/.config/hypr/brave-video/brave_video.py
-chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
+chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/minimize.sh ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
 chmod +x ~/.config/hypr/theme-switch/theme_switch.py ~/.config/hypr/theme-switch/theme_transition.py ~/.config/hypr/lock/*.sh ~/.config/hypr/power-menu/power_menu.py ~/.config/hypr/control-center/control_center.py
 ~/.config/hypr/theme-switch/theme_switch.py default
 

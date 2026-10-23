@@ -27,6 +27,7 @@ end
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
     hl.exec_cmd("mako")
+    hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/minimize.sh")
     hl.exec_cmd(themeSwitch .. " --restore")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/window-switcher/ui_daemon.py")
     hl.exec_cmd("pw-play " .. os.getenv("HOME") .. "/.config/hypr/sounds/login.mp3")
