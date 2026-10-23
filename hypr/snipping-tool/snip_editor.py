@@ -124,6 +124,7 @@ class SnipEditor(Gtk.Window):
         self.zoom = 1.0
         self.tool_buttons = {}
         self.updating_tools = False
+        self.updating_swatches = False
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(root)
@@ -439,12 +440,13 @@ class SnipEditor(Gtk.Window):
         return False
 
     def pick_color(self, button, name, color, swatches):
+        if self.updating_swatches:
+            return
+        self.updating_swatches = True
         self.settings[name]["color"] = color
         for swatch in swatches:
-            if swatch is not button and swatch.get_active():
-                swatch.set_active(False)
-        if not button.get_active():
-            button.set_active(True)
+            swatch.set_active(swatch is button)
+        self.updating_swatches = False
 
     def on_crop_toggled(self, button):
         self.set_crop_controls(button.get_active())

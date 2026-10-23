@@ -9,7 +9,8 @@
     "modules-left": [
         "custom/logo",
         "group/controls",
-        "group/media"
+        "group/media",
+        "custom/workspaces"
     ],
     "modules-center": [
         "group/datetime"
@@ -72,6 +73,15 @@
         "on-click": "~/.config/hypr/popups/popup_request.py player",
         "on-scroll-up": "playerctl position 5+",
         "on-scroll-down": "playerctl position 5-"
+    },
+    "custom/workspaces": {
+        "exec": "~/.config/waybar/workspaces.py",
+        "return-type": "json",
+        "escape": false,
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'",
+        "on-click-right": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
+        "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
+        "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'"
     },
     "group/datetime": {
         "orientation": "horizontal",

@@ -28,7 +28,6 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/waybar/visualizer.py")
     hl.exec_cmd("mako")
-    hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/minimize.sh")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/spotify-tray/spotify_tray.py")
     hl.exec_cmd(themeSwitch .. " --restore")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/window-switcher/ui_daemon.py")
@@ -196,6 +195,63 @@ end
 hl.bind(mainMod .. " + F", ToggleFullscreen)
 hl.bind(mainMod .. " + N",         hl.dsp.window.move({ workspace = "special:minimized", follow = false }))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))
+
+function WorkspaceEdgeDrop(side, address)
+    return function()
+        local dropped = nil
+        for _, w in ipairs(hl.get_windows()) do
+            if w.address == address then
+                dropped = w
+                break
+            end
+        end
+        if not dropped or not dropped.workspace or dropped.workspace.id < 1 then
+            return
+        end
+        local current = dropped.workspace.id
+        local ids, used = {}, {}
+        for _, ws in ipairs(hl.get_workspaces()) do
+            if ws.id > 0 then
+                table.insert(ids, ws.id)
+                used[ws.id] = true
+            end
+        end
+        table.sort(ids)
+        local target = nil
+        if side == "right" then
+            for _, id in ipairs(ids) do
+                if id > current then
+                    target = id
+                    break
+                end
+            end
+        else
+            for i = #ids, 1, -1 do
+                if ids[i] < current then
+                    target = ids[i]
+                    break
+                end
+            end
+        end
+        if not target then
+            if dropped.workspace.windows < 2 then
+                return
+            end
+            if side == "left" then
+                for id = current - 1, 1, -1 do
+                    if not used[id] then
+                        target = id
+                        break
+                    end
+                end
+            end
+            target = target or ids[#ids] + 1
+        end
+        hl.dispatch(hl.dsp.window.move({ workspace = target, window = "address:" .. address, follow = false }))
+    end
+end
+hl.bind("CTRL + Tab",         hl.dsp.focus({ workspace = "e+1" }))
+hl.bind("CTRL + SHIFT + Tab", hl.dsp.focus({ workspace = "e-1" }))
 
 local fullscreenKeycode = 95
 local fullscreenPending  = false

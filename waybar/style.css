@@ -80,6 +80,20 @@ tooltip label {
     background-color: transparent;
 }
 
+#custom-workspaces.multiple {
+    margin-left: 6px;
+    padding: 0 12px;
+    background-color: alpha(@kewl_background, 0.72);
+    border: 1px solid alpha(@kewl_foreground, 0.08);
+    border-radius: 999px;
+    color: @kewl_accent;
+    font-size: 11px;
+}
+
+#custom-workspaces.multiple:hover {
+    background-color: alpha(@kewl_accent, 0.25);
+}
+
 #custom-now-playing {
     font-size: 12px;
     color: @kewl_foreground;
