@@ -36,8 +36,19 @@ end
 
 function cmatrix
     printf '\e]4;2;%s\a\e]4;10;%s\a' $_accent $_accent
-    command cmatrix $argv
-    set -l result $status
+    set -l result
+    set -l terminfo_dir $HOME/.local/share/kewlrice/terminfo
+    if test "$TERM" = xterm-kitty; and not TERMINFO=$terminfo_dir infocmp xterm-kitty-matrix >/dev/null 2>&1
+        mkdir -p $terminfo_dir
+        infocmp -x xterm-kitty | sed -e 's/^xterm-kitty|[^,]*,/xterm-kitty-matrix|kitty with default background for black,/' -e 's/setab=\\\\E\[%?/setab=\\\\E[%?%p1%{0}%=%t49%e/' | tic -x -o $terminfo_dir - 2>/dev/null
+    end
+    if test "$TERM" = xterm-kitty; and TERMINFO=$terminfo_dir infocmp xterm-kitty-matrix >/dev/null 2>&1
+        TERMINFO=$terminfo_dir TERM=xterm-kitty-matrix command cmatrix $argv
+        set result $status
+    else
+        command cmatrix $argv
+        set result $status
+    end
     printf '\e]104;2;10\a'
     return $result
 end
@@ -55,6 +66,8 @@ end
 
 if not set -q FASTFETCH_SHOWN
     set -gx FASTFETCH_SHOWN 1
+    printf '\e[?25l'
     sleep 1.0
     fastfetch
+    printf '\e[?25h'
 end
