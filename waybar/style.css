@@ -55,8 +55,29 @@ tooltip label {
     margin-left: 6px;
 }
 
+#image.album-art,
+#image.visualizer,
+#custom-now-playing:not(.stopped) {
+    background-color: alpha(@kewl_background, 0.72);
+    border-top: 1px solid alpha(@kewl_foreground, 0.08);
+    border-bottom: 1px solid alpha(@kewl_foreground, 0.08);
+}
+
 #image.album-art {
-    margin: 0 8px 0 0;
+    padding: 0 6px 0 2px;
+    border-left: 1px solid alpha(@kewl_foreground, 0.08);
+    border-radius: 999px 0 0 999px;
+}
+
+#image.visualizer {
+    padding: 0 4px;
+}
+
+#image.album-art.empty,
+#image.visualizer.empty {
+    padding: 0;
+    border: none;
+    background-color: transparent;
 }
 
 #custom-now-playing {
@@ -65,10 +86,9 @@ tooltip label {
 }
 
 #custom-now-playing:not(.stopped) {
-    background-color: alpha(@kewl_background, 0.72);
-    border: 1px solid alpha(@kewl_foreground, 0.08);
-    border-radius: 999px;
-    padding: 0 12px 0 5px;
+    padding: 0 14px 0 6px;
+    border-right: 1px solid alpha(@kewl_foreground, 0.08);
+    border-radius: 0 999px 999px 0;
 }
 
 #custom-now-playing.paused {

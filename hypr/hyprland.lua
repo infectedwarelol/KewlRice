@@ -26,6 +26,7 @@ end
 
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
+    hl.exec_cmd(os.getenv("HOME") .. "/.config/waybar/visualizer.py")
     hl.exec_cmd("mako")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/minimize.sh")
     hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/spotify-tray/spotify_tray.py")

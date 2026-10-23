@@ -44,14 +44,25 @@
         "orientation": "horizontal",
         "modules": [
             "image#album-art",
+            "image#visualizer",
             "custom/now-playing"
         ]
     },
     "image#album-art": {
-        "exec": "~/.config/waybar/album-art.sh",
-        "size": 26,
-        "interval": 3,
-        "on-click": "~/.config/hypr/popups/popup_request.py player"
+        "path": "/tmp/kewlrice-disc.png",
+        "size": 34,
+        "interval": 0.05,
+        "on-click": "~/.config/hypr/popups/popup_request.py player",
+        "on-scroll-up": "playerctl position 5+",
+        "on-scroll-down": "playerctl position 5-"
+    },
+    "image#visualizer": {
+        "path": "/tmp/kewlrice-visualizer.png",
+        "size": 18,
+        "interval": 0.05,
+        "on-click": "~/.config/hypr/popups/popup_request.py player",
+        "on-scroll-up": "playerctl position 5+",
+        "on-scroll-down": "playerctl position 5-"
     },
     "custom/now-playing": {
         "exec": "~/.config/waybar/now-playing.sh",

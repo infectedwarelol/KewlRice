@@ -3,7 +3,7 @@ set -e
 
 cd "$(dirname "$0")"
 
-sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg unzip libayatana-appindicator
+sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg unzip libayatana-appindicator cava
 
 mkdir -p ~/rice-backup
 cp -r ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.config/btop ~/.config/fastfetch ~/rice-backup/ 2>/dev/null || true
@@ -33,7 +33,7 @@ chmod +x ~/.config/hypr/window-switcher/window_switcher.py ~/.config/hypr/window
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
 chmod +x ~/.config/hypr/snipping-tool/snipping_tool.py
 chmod +x ~/.config/fastfetch/spinning_logo.py
-chmod +x ~/.config/waybar/weather.py
+chmod +x ~/.config/waybar/weather.py ~/.config/waybar/visualizer.py
 chmod +x ~/.config/waybar/memory.sh ~/.config/waybar/now-playing.sh ~/.config/waybar/album-art.sh
 chmod +x ~/.config/hypr/popups/popups.py ~/.config/hypr/popups/popup_request.py
 chmod +x ~/.config/hypr/window-frame/window_frame.py
