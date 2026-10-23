@@ -3,7 +3,7 @@ set -e
 
 cd "$(dirname "$0")"
 
-sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg unzip
+sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg unzip libayatana-appindicator
 
 mkdir -p ~/rice-backup
 cp -r ~/.config/hypr ~/.config/waybar ~/.config/wofi ~/.config/rofi ~/.config/kitty ~/.config/mako ~/.config/btop ~/.config/fastfetch ~/rice-backup/ 2>/dev/null || true
@@ -39,7 +39,7 @@ chmod +x ~/.config/hypr/popups/popups.py ~/.config/hypr/popups/popup_request.py
 chmod +x ~/.config/hypr/window-frame/window_frame.py
 make -C ~/.config/hypr/window-grab install || echo "window-grab plugin build failed (needs hyprland headers)"
 chmod +x ~/.config/hypr/brave-video/brave_video.py
-chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/minimize.sh ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
+chmod +x ~/.config/hypr/launcher.sh ~/.config/hypr/minimize.sh ~/.config/hypr/spotify-tray/spotify_tray.py ~/.config/hypr/terminal-key-repeat.sh ~/.config/hypr/clipboard/clipboard_menu.py
 chmod +x ~/.config/hypr/theme-switch/theme_switch.py ~/.config/hypr/theme-switch/theme_transition.py ~/.config/hypr/lock/*.sh ~/.config/hypr/power-menu/power_menu.py ~/.config/hypr/control-center/control_center.py
 ~/.config/hypr/theme-switch/theme_switch.py default
 
