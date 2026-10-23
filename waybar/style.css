@@ -83,7 +83,7 @@ tooltip label {
 #custom-power {
     min-width: 26px;
     padding: 0 3px;
-    margin: 5px 1px;
+    margin: 5px 2px;
     border-radius: 999px;
     color: alpha(@kewl_foreground, 0.85);
     font-size: 14px;
@@ -115,7 +115,7 @@ tooltip label {
 #custom-memory,
 #temperature,
 #custom-device-battery {
-    margin: 6px 2px;
+    margin: 5px 2px;
     padding: 0 9px;
     border-radius: 999px;
     background-color: alpha(@kewl_surface, 0.75);
@@ -161,7 +161,6 @@ tooltip label {
 
 #datetime {
     padding: 0 14px;
-    border-radius: 12px;
 }
 
 #clock {
@@ -186,6 +185,5 @@ tooltip label {
 }
 
 #custom-power {
-    margin-left: 4px;
     color: @kewl_urgent;
 }

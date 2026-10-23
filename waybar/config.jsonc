@@ -166,6 +166,7 @@
     },
     "clock": {
         "interval": 1,
+        "justify": "center",
         "on-click": "~/.config/hypr/popups/popup_request.py calendar",
         "format": "<span weight='bold' size='11pt'>{0:%H:%M:%S}</span>\n<span size='7.5pt' fgalpha='70%'>{0:%A, %B %d}</span>",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
