@@ -44,7 +44,10 @@ while true; do
         printf -v left_bar '%*s' $((width - filled)) ''
         done_bar="${done_bar// /━}"
         left_bar="${left_bar// /━}"
-        shorten "$title" 22 short_title
+        bare_title="${title%% (*}"
+        bare_title="${bare_title%% [*}"
+        [ -n "$bare_title" ] || bare_title="$title"
+        shorten "$bare_title" 28 short_title
         label="$short_title"
         if [ -n "$artist" ]; then
             shorten "$artist" 14 short_artist
