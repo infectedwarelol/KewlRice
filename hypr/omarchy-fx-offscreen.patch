@@ -1,0 +1,15 @@
+diff --git a/src/MeshTransformer.cpp b/src/MeshTransformer.cpp
+index 19d307a..cef227f 100644
+--- a/src/MeshTransformer.cpp
++++ b/src/MeshTransformer.cpp
+@@ -31,6 +31,10 @@ uniform sampler2D tex;
+ out vec4 fragColor;
+ 
+ void main() {
++    if (any(lessThan(v_texcoord, vec2(0.0))) || any(greaterThan(v_texcoord, vec2(1.0)))) {
++        fragColor = vec4(0.0);
++        return;
++    }
+     fragColor = texture(tex, v_texcoord);
+ }
+ )#";
