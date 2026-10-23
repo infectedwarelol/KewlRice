@@ -78,7 +78,7 @@ Run `./install.sh` from inside the cloned folder to do everything below in one g
 1. Get the files:
 
 ```bash
-git clone https://gitlab.com/infectedware/KewlRice.git
+git clone https://github.com/infectedwarelol/KewlRice.git
 cd KewlRice
 ```
 
