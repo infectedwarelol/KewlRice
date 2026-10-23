@@ -410,7 +410,7 @@ function OverviewToggle()
     end
     local windows = {}
     for _, w in ipairs(hl.get_windows()) do
-        if w.mapped and w.workspace then
+        if w.mapped and w.workspace and w.workspace.name ~= "special:hidden" then
             table.insert(windows, {
                 address = w.address,
                 workspace = w.workspace.name,
