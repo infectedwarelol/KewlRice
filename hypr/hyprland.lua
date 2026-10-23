@@ -236,6 +236,16 @@ function ShowDesktopToggle()
     end
 end
 hl.bind(mainMod .. " + D", ShowDesktopToggle, { dont_inhibit = true })
+hl.on("workspace.special_active", function()
+    local special = hl.get_active_special_workspace()
+    if not special or special.name ~= "special:desktop" then
+        return
+    end
+    hl.dispatch(hl.dsp.workspace.toggle_special("desktop"))
+    if #hl.get_windows({ workspace = "special:desktop" }) > 0 then
+        ShowDesktopToggle()
+    end
+end)
 
 local overviewState = nil
 local overviewClickBind = nil
