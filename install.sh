@@ -23,7 +23,7 @@ cp fish/config.fish ~/.config/fish/config.fish
 chsh -s /usr/bin/fish
 cp konsole/Transparent.colorscheme konsole/Transparent.profile ~/.local/share/konsole/
 cp konsole/konsolerc dolphin/dolphinrc ~/.config/
-cp applications/snipping-tool.desktop ~/.local/share/applications/
+cp applications/*.desktop ~/.local/share/applications/
 cp -r themes templates ~/.config/kewlrice/
 cp -r hypr/sounds ~/.config/kewlrice/sounds
 mkdir -p ~/.config/hypr/wallpapers
