@@ -756,7 +756,6 @@ hl.window_rule({
     no_blur   = true,
     no_shadow = true,
     no_anim   = true,
-    workspace = "9",
 })
 
 dofile(os.getenv("HOME") .. "/.config/hypr/omarchy_fx.lua")
