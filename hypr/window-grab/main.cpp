@@ -2,7 +2,7 @@
 #include <hyprland/src/version.h>
 #include <hyprland/src/desktop/state/ViewState.hpp>
 #include <hyprland/src/desktop/state/ViewHitTester.hpp>
-#include <hyprland/src/desktop/view/Window.hpp>
+#include <hyprland/src/desktop/view/window/Window.hpp>
 #include <hyprland/src/event/EventBus.hpp>
 #include <hyprland/src/layout/LayoutManager.hpp>
 #include <hyprland/src/layout/target/Target.hpp>
@@ -12,8 +12,6 @@
 #include <hyprland/src/output/Monitor.hpp>
 #include <hyprland/src/layout/supplementary/DragController.hpp>
 
-#include <hyprland/src/protocols/XDGShell.hpp>
-#include <hyprland/src/xwayland/XSurface.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -77,7 +75,7 @@ namespace {
 
     void minimize(const PHLWINDOWREF& weak) {
         const auto WINDOW = weak.lock();
-        if (!WINDOW || !WINDOW->m_isMapped || (WINDOW->m_workspace && WINDOW->m_workspace->m_isSpecialWorkspace))
+        if (!WINDOW || !WINDOW->mapped() || WINDOW->onSpecialWorkspace())
             return;
         dispatchLater(std::format(R"(hl.dsp.window.move({{ workspace = "special:minimized", window = "address:{}", follow = false }}))", addressOf(WINDOW)));
     }
@@ -88,19 +86,10 @@ namespace {
             return;
 
         const PHLWINDOWREF WEAK{window};
-        if (const auto XDG = window->m_xdgSurface.lock(); XDG && XDG->m_toplevel) {
-            g_minimizeHooks.push_back({WEAK, XDG->m_toplevel->m_events.stateChanged.listen([WEAK, toplevel = XDG->m_toplevel]() {
-                const auto TOPLEVEL = toplevel.lock();
-                if (TOPLEVEL && TOPLEVEL->m_state.requestsMinimize.value_or(false))
-                    minimize(WEAK);
-            })});
-        } else if (const auto XSURFACE = window->m_xwaylandSurface.lock(); XSURFACE) {
-            g_minimizeHooks.push_back({WEAK, XSURFACE->m_events.stateChanged.listen([WEAK, surface = window->m_xwaylandSurface]() {
-                const auto SURFACE = surface.lock();
-                if (SURFACE && SURFACE->m_state.requestsMinimize.value_or(false))
-                    minimize(WEAK);
-            })});
-        }
+        g_minimizeHooks.push_back({WEAK, window->backend().m_events.stateRequest.listen([WEAK](const Desktop::View::SBackendStateRequest& request) {
+            if (request.minimized.value_or(false))
+                minimize(WEAK);
+        })});
     }
 
     void rememberGrab() {
@@ -108,7 +97,7 @@ namespace {
 
         const auto MOUSE  = g_pInputManager->getMouseCoordsInternal();
         const auto WINDOW = Desktop::viewState()->hitTest().windowAt(MOUSE, Desktop::View::RESERVED_EXTENTS | Desktop::View::INPUT_EXTENTS | Desktop::View::ALLOW_FLOATING);
-        if (!WINDOW || WINDOW->m_isFloating || !WINDOW->layoutTarget())
+        if (!WINDOW || WINDOW->isFloating() || !WINDOW->layoutTarget())
             return;
 
         const auto BOX = WINDOW->layoutTarget()->position();
@@ -170,7 +159,7 @@ namespace {
         if (MOUSE.y <= TOPBAND) {
             g_pEventLoopManager->doLater([weak = PHLWINDOWREF{WINDOW}]() {
                 const auto DROPPED = weak.lock();
-                if (!DROPPED || !DROPPED->m_isMapped)
+                if (!DROPPED || !DROPPED->mapped())
                     return;
                 Fullscreen::controller()->setFullscreenMode(DROPPED, Fullscreen::FSMODE_FULLSCREEN);
             });
@@ -209,7 +198,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     g_listeners.emplace_back(Event::bus()->m_events.window.open.listen([](PHLWINDOW window) { hookMinimize(window); }));
 
     for (const auto& window : Desktop::viewState()->windows()) {
-        if (window->m_isMapped)
+        if (window->mapped())
             hookMinimize(window);
     }
 
