@@ -1115,7 +1115,7 @@ pub unsafe extern "C" fn globe_render(
             row.bright[end..].fill(0);
             frame.render_span::<false, true>(&mut row, start, outer_left);
             frame.render_span::<true, true>(&mut row, outer_left, inner_left);
-            frame.render_span::<true, false>(&mut row, inner_left, inner_right);
+            render_interior(&frame, &mut row, inner_left, inner_right);
             frame.render_span::<true, true>(&mut row, inner_right, outer_right);
             frame.render_span::<false, true>(&mut row, outer_right, end);
         },
@@ -1476,4 +1476,611 @@ pub unsafe extern "C" fn globe_bake(
         }
     });
     0
+}
+
+#[cfg(not(all(
+    target_arch = "x86_64",
+    target_feature = "avx2",
+    target_feature = "fma"
+)))]
+fn render_interior(frame: &Frame, row: &mut Row, start: usize, end: usize) {
+    frame.render_span::<true, false>(row, start, end);
+}
+
+#[cfg(all(
+    target_arch = "x86_64",
+    target_feature = "avx2",
+    target_feature = "fma"
+))]
+fn render_interior(frame: &Frame, row: &mut Row, start: usize, end: usize) {
+    unsafe { wide::render_interior(frame, row, start, end) }
+}
+
+#[cfg(all(
+    target_arch = "x86_64",
+    target_feature = "avx2",
+    target_feature = "fma"
+))]
+mod wide {
+    use super::{Frame, GRADE_STEPS, POLE_TEXELS, Row, WRAP_BIAS_TEXELS};
+    use std::arch::x86_64::*;
+
+    struct Taps8 {
+        top_left: __m256i,
+        top_right: __m256i,
+        bottom_left: __m256i,
+        bottom_right: __m256i,
+        weight_x: __m256i,
+        weight_y: __m256i,
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn splat(value: f32) -> __m256 {
+        _mm256_set1_ps(value)
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn splat_int(value: i32) -> __m256i {
+        _mm256_set1_epi32(value)
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn clamp8(value: __m256, low: f32, high: f32) -> __m256 {
+        _mm256_min_ps(_mm256_max_ps(value, splat(low)), splat(high))
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn smoothstep8(edge0: f32, edge1: f32, value: __m256) -> __m256 {
+        let t = clamp8(
+            _mm256_mul_ps(
+                _mm256_sub_ps(value, splat(edge0)),
+                splat(1.0 / (edge1 - edge0)),
+            ),
+            0.0,
+            1.0,
+        );
+        _mm256_mul_ps(
+            _mm256_mul_ps(t, t),
+            _mm256_fnmadd_ps(splat(2.0), t, splat(3.0)),
+        )
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn mix8(first: __m256, second: __m256, amount: __m256) -> __m256 {
+        _mm256_fmadd_ps(_mm256_sub_ps(second, first), amount, first)
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn byte8(pixel: __m256i, shift: i32) -> __m256 {
+        _mm256_cvtepi32_ps(_mm256_and_si256(
+            _mm256_srlv_epi32(pixel, splat_int(shift)),
+            splat_int(0xFF),
+        ))
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn blend8(first: __m256i, second: __m256i, weight: __m256i) -> __m256i {
+        let mask = splat_int(0x00FF00FF);
+        let weights = _mm256_or_si256(weight, _mm256_slli_epi32::<16>(weight));
+        let inverse = _mm256_sub_epi16(_mm256_set1_epi16(256), weights);
+        let red_blue = _mm256_srli_epi16::<8>(_mm256_add_epi16(
+            _mm256_mullo_epi16(_mm256_and_si256(first, mask), inverse),
+            _mm256_mullo_epi16(_mm256_and_si256(second, mask), weights),
+        ));
+        let alpha_green = _mm256_andnot_si256(
+            mask,
+            _mm256_add_epi16(
+                _mm256_mullo_epi16(
+                    _mm256_and_si256(_mm256_srli_epi32::<8>(first), mask),
+                    inverse,
+                ),
+                _mm256_mullo_epi16(
+                    _mm256_and_si256(_mm256_srli_epi32::<8>(second), mask),
+                    weights,
+                ),
+            ),
+        );
+        _mm256_or_si256(red_blue, alpha_green)
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn taps8(frame: &Frame, level: __m256i, u: __m256, v: __m256) -> Taps8 {
+        let one = splat_int(1);
+        let texels = frame.base_width * frame.base_height;
+        let width_shift =
+            _mm256_sub_epi32(splat_int(frame.base_width.trailing_zeros() as i32), level);
+        let width_mask = _mm256_sub_epi32(_mm256_sllv_epi32(one, width_shift), one);
+        let last_row =
+            _mm256_sub_epi32(_mm256_srlv_epi32(splat_int(frame.base_height), level), one);
+        let remaining = _mm256_srlv_epi32(splat_int(texels), _mm256_add_epi32(level, level));
+        let offset = _mm256_cvtps_epi32(_mm256_mul_ps(
+            _mm256_cvtepi32_ps(_mm256_sub_epi32(splat_int(texels), remaining)),
+            splat(4.0 / 3.0),
+        ));
+        let scale = _mm256_castsi256_ps(_mm256_slli_epi32::<23>(_mm256_sub_epi32(
+            splat_int(127),
+            level,
+        )));
+        let half = splat(0.5);
+        let fu = _mm256_fmsub_ps(u, scale, half);
+        let fv = _mm256_min_ps(
+            _mm256_max_ps(_mm256_fmsub_ps(v, scale, half), _mm256_setzero_ps()),
+            _mm256_cvtepi32_ps(last_row),
+        );
+        let ix = _mm256_cvttps_epi32(_mm256_mul_ps(
+            _mm256_add_ps(fu, splat(WRAP_BIAS_TEXELS)),
+            splat(256.0),
+        ));
+        let iy = _mm256_cvttps_epi32(_mm256_mul_ps(fv, splat(256.0)));
+        let x0 = _mm256_and_si256(_mm256_srli_epi32::<8>(ix), width_mask);
+        let x1 = _mm256_and_si256(_mm256_add_epi32(x0, one), width_mask);
+        let y0 = _mm256_srli_epi32::<8>(iy);
+        let y1 = _mm256_min_epi32(_mm256_add_epi32(y0, one), last_row);
+        let top = _mm256_add_epi32(offset, _mm256_sllv_epi32(y0, width_shift));
+        let bottom = _mm256_add_epi32(offset, _mm256_sllv_epi32(y1, width_shift));
+        Taps8 {
+            top_left: _mm256_add_epi32(top, x0),
+            top_right: _mm256_add_epi32(top, x1),
+            bottom_left: _mm256_add_epi32(bottom, x0),
+            bottom_right: _mm256_add_epi32(bottom, x1),
+            weight_x: _mm256_and_si256(ix, splat_int(0xFF)),
+            weight_y: _mm256_and_si256(iy, splat_int(0xFF)),
+        }
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    unsafe fn gather8(texels: &[u32], index: __m256i) -> __m256i {
+        unsafe { _mm256_i32gather_epi32::<4>(texels.as_ptr().cast(), index) }
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    unsafe fn fetch8(texels: &[u32], taps: &Taps8) -> __m256i {
+        unsafe {
+            blend8(
+                blend8(
+                    gather8(texels, taps.top_left),
+                    gather8(texels, taps.top_right),
+                    taps.weight_x,
+                ),
+                blend8(
+                    gather8(texels, taps.bottom_left),
+                    gather8(texels, taps.bottom_right),
+                    taps.weight_x,
+                ),
+                taps.weight_y,
+            )
+        }
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    unsafe fn cloud_texel8(texels: &[u32], index: __m256i) -> __m256 {
+        unsafe { _mm256_mul_ps(byte8(gather8(texels, index), 24), splat(1.0 / 255.0)) }
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn tone_map8(value: __m256) -> __m256 {
+        let value = _mm256_max_ps(value, _mm256_setzero_ps());
+        let numerator = _mm256_mul_ps(value, _mm256_fmadd_ps(value, splat(2.51), splat(0.03)));
+        let denominator = _mm256_fmadd_ps(
+            value,
+            _mm256_fmadd_ps(value, splat(2.43), splat(0.59)),
+            splat(0.14),
+        );
+        _mm256_min_ps(_mm256_div_ps(numerator, denominator), splat(1.0))
+    }
+
+    #[inline]
+    #[target_feature(enable = "avx2,fma")]
+    fn dot8(x: __m256, y: __m256, z: __m256, direction: [f32; 3]) -> __m256 {
+        _mm256_fmadd_ps(
+            x,
+            splat(direction[0]),
+            _mm256_fmadd_ps(
+                y,
+                splat(direction[1]),
+                _mm256_mul_ps(z, splat(direction[2])),
+            ),
+        )
+    }
+
+    #[target_feature(enable = "avx2,fma")]
+    pub(super) fn render_interior(frame: &Frame, row: &mut Row, start: usize, end: usize) {
+        let zero = _mm256_setzero_ps();
+        let one = splat(1.0);
+        let last_level = splat_int(frame.last_level);
+        let lanes = _mm256_setr_ps(0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5);
+        let lane_offsets = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+        let sy = splat(row.sy);
+        let cos_pitch = splat(frame.cos_pitch);
+        let sin_pitch = splat(frame.sin_pitch);
+        let inverse_255 = splat(1.0 / 255.0);
+        let inverse_256 = splat(1.0 / 256.0);
+        let texture_height = splat(frame.texture_height);
+        let row_hash = splat_int(row.index.wrapping_mul(0xd8163841) as i32);
+        let mut column = start;
+        while column + 8 <= end {
+            unsafe {
+                let sx = _mm256_mul_ps(
+                    _mm256_sub_ps(
+                        _mm256_add_ps(splat(column as f32), lanes),
+                        splat(frame.center),
+                    ),
+                    splat(frame.inverse_radius),
+                );
+                let distance_squared = _mm256_fmadd_ps(sx, sx, _mm256_mul_ps(sy, sy));
+                let sz = _mm256_sqrt_ps(_mm256_max_ps(_mm256_sub_ps(one, distance_squared), zero));
+
+                let base_u = _mm256_loadu_ps(row.u.as_ptr().add(column));
+                let pixel_u = _mm256_add_ps(base_u, splat(frame.shift));
+                let pixel_v = _mm256_loadu_ps(row.v.as_ptr().add(column));
+                let pixel_lod = _mm256_loadu_ps(row.lod.as_ptr().add(column));
+                let level = _mm256_min_epi32(_mm256_cvttps_epi32(pixel_lod), last_level);
+                let next_level =
+                    _mm256_min_epi32(_mm256_add_epi32(level, splat_int(1)), last_level);
+                let mip_weight = _mm256_cvttps_epi32(_mm256_mul_ps(
+                    clamp8(
+                        _mm256_sub_ps(pixel_lod, _mm256_cvtepi32_ps(level)),
+                        0.0,
+                        1.0,
+                    ),
+                    splat(256.0),
+                ));
+                let taps = taps8(frame, level, pixel_u, pixel_v);
+                let mut color = fetch8(frame.color_source, &taps);
+                let mut surface = fetch8(frame.surface_source, &taps);
+                let taps = taps8(frame, next_level, pixel_u, pixel_v);
+                color = blend8(color, fetch8(frame.color_source, &taps), mip_weight);
+                surface = blend8(surface, fetch8(frame.surface_source, &taps), mip_weight);
+                let pole_distance = _mm256_min_ps(pixel_v, _mm256_sub_ps(texture_height, pixel_v));
+                let pole_weight = _mm256_cvttps_epi32(_mm256_mul_ps(
+                    clamp8(
+                        _mm256_fnmadd_ps(pole_distance, splat(1.0 / POLE_TEXELS), one),
+                        0.0,
+                        1.0,
+                    ),
+                    splat(256.0),
+                ));
+                let north = _mm256_castps_si256(_mm256_cmp_ps::<_CMP_LT_OQ>(
+                    pixel_v,
+                    _mm256_mul_ps(texture_height, splat(0.5)),
+                ));
+                color = blend8(
+                    color,
+                    _mm256_blendv_epi8(
+                        splat_int(frame.color_poles[1] as i32),
+                        splat_int(frame.color_poles[0] as i32),
+                        north,
+                    ),
+                    pole_weight,
+                );
+                surface = blend8(
+                    surface,
+                    _mm256_blendv_epi8(
+                        splat_int(frame.surface_poles[1] as i32),
+                        splat_int(frame.surface_poles[0] as i32),
+                        north,
+                    ),
+                    pole_weight,
+                );
+
+                let cloud_level = _mm256_min_epi32(
+                    _mm256_cvttps_epi32(_mm256_add_ps(pixel_lod, splat(1.5))),
+                    last_level,
+                );
+                let taps = taps8(
+                    frame,
+                    cloud_level,
+                    _mm256_add_ps(base_u, splat(frame.cloud_shift)),
+                    pixel_v,
+                );
+                let cloud_top_left = cloud_texel8(frame.surface_source, taps.top_left);
+                let cloud_top_right = cloud_texel8(frame.surface_source, taps.top_right);
+                let cloud_bottom_left = cloud_texel8(frame.surface_source, taps.bottom_left);
+                let cloud_bottom_right = cloud_texel8(frame.surface_source, taps.bottom_right);
+                let cloud_x = _mm256_mul_ps(_mm256_cvtepi32_ps(taps.weight_x), inverse_256);
+                let cloud_y = _mm256_mul_ps(_mm256_cvtepi32_ps(taps.weight_y), inverse_256);
+                let cloud = mix8(
+                    mix8(cloud_top_left, cloud_top_right, cloud_x),
+                    mix8(cloud_bottom_left, cloud_bottom_right, cloud_x),
+                    cloud_y,
+                );
+                let shadow_x = clamp8(
+                    _mm256_sub_ps(cloud_x, splat(frame.shadow_shift_x)),
+                    0.0,
+                    1.0,
+                );
+                let shadow_y = clamp8(
+                    _mm256_add_ps(cloud_y, splat(frame.shadow_shift_y)),
+                    0.0,
+                    1.0,
+                );
+                let cloud_shadow = mix8(
+                    mix8(cloud_top_left, cloud_top_right, shadow_x),
+                    mix8(cloud_bottom_left, cloud_bottom_right, shadow_x),
+                    shadow_y,
+                );
+
+                let world_y = _mm256_fmadd_ps(sy, cos_pitch, _mm256_mul_ps(sz, sin_pitch));
+                let world_z = _mm256_fmsub_ps(sz, cos_pitch, _mm256_mul_ps(sy, sin_pitch));
+                let latitude_cos =
+                    _mm256_sqrt_ps(_mm256_fmadd_ps(sx, sx, _mm256_mul_ps(world_z, world_z)));
+                let inverse_cos = _mm256_div_ps(one, _mm256_max_ps(latitude_cos, splat(1e-4)));
+                let east_x = _mm256_mul_ps(world_z, inverse_cos);
+                let east_world_z = _mm256_mul_ps(_mm256_sub_ps(zero, sx), inverse_cos);
+                let east_y = _mm256_mul_ps(_mm256_sub_ps(zero, east_world_z), sin_pitch);
+                let east_z = _mm256_mul_ps(east_world_z, cos_pitch);
+                let north_x =
+                    _mm256_mul_ps(_mm256_mul_ps(_mm256_sub_ps(zero, world_y), sx), inverse_cos);
+                let north_world_z = _mm256_mul_ps(
+                    _mm256_mul_ps(_mm256_sub_ps(zero, world_y), world_z),
+                    inverse_cos,
+                );
+                let north_y = _mm256_fnmadd_ps(
+                    north_world_z,
+                    sin_pitch,
+                    _mm256_mul_ps(latitude_cos, cos_pitch),
+                );
+                let north_z = _mm256_fmadd_ps(
+                    north_world_z,
+                    cos_pitch,
+                    _mm256_mul_ps(latitude_cos, sin_pitch),
+                );
+                let bump = splat(frame.bump);
+                let slope_east =
+                    _mm256_mul_ps(_mm256_sub_ps(byte8(surface, 16), splat(128.0)), bump);
+                let slope_north =
+                    _mm256_mul_ps(_mm256_sub_ps(byte8(surface, 8), splat(128.0)), bump);
+                let inverse_length = _mm256_div_ps(
+                    one,
+                    _mm256_sqrt_ps(_mm256_fmadd_ps(
+                        slope_east,
+                        slope_east,
+                        _mm256_fmadd_ps(slope_north, slope_north, one),
+                    )),
+                );
+                let bumped_x = _mm256_mul_ps(
+                    _mm256_fnmadd_ps(
+                        slope_north,
+                        north_x,
+                        _mm256_fnmadd_ps(slope_east, east_x, sx),
+                    ),
+                    inverse_length,
+                );
+                let bumped_y = _mm256_mul_ps(
+                    _mm256_fnmadd_ps(
+                        slope_north,
+                        north_y,
+                        _mm256_fnmadd_ps(slope_east, east_y, sy),
+                    ),
+                    inverse_length,
+                );
+                let bumped_z = _mm256_mul_ps(
+                    _mm256_fnmadd_ps(
+                        slope_north,
+                        north_z,
+                        _mm256_fnmadd_ps(slope_east, east_z, sz),
+                    ),
+                    inverse_length,
+                );
+
+                let geometric = dot8(sx, sy, sz, frame.light);
+                let facing = dot8(bumped_x, bumped_y, bumped_z, frame.light);
+                let diffuse = _mm256_mul_ps(
+                    clamp8(
+                        _mm256_mul_ps(_mm256_add_ps(facing, splat(0.3)), splat(1.0 / 1.3)),
+                        0.0,
+                        1.0,
+                    ),
+                    smoothstep8(-0.3, 0.15, geometric),
+                );
+                let daylight = smoothstep8(-0.12, 0.32, geometric);
+                let band_distance =
+                    _mm256_mul_ps(_mm256_sub_ps(geometric, splat(0.03)), splat(1.0 / 0.24));
+                let band = _mm256_mul_ps(
+                    splat(frame.warm_amount),
+                    clamp8(
+                        _mm256_fnmadd_ps(band_distance, band_distance, one),
+                        0.0,
+                        1.0,
+                    ),
+                );
+                let rim = clamp8(dot8(bumped_x, bumped_y, bumped_z, frame.rim), 0.0, 1.0);
+                let sky = _mm256_fmadd_ps(bumped_y, splat(0.5), splat(0.5));
+                let mut half_facing =
+                    clamp8(dot8(bumped_x, bumped_y, bumped_z, frame.half), 0.0, 1.0);
+                half_facing = _mm256_and_ps(
+                    half_facing,
+                    _mm256_cmp_ps::<_CMP_GT_OQ>(half_facing, splat(0.3)),
+                );
+                let mut broad = _mm256_mul_ps(half_facing, half_facing);
+                broad = _mm256_mul_ps(broad, broad);
+                broad = _mm256_mul_ps(broad, broad);
+                let mut glossy = _mm256_mul_ps(broad, broad);
+                glossy = _mm256_mul_ps(glossy, glossy);
+                glossy = _mm256_mul_ps(glossy, glossy);
+                let grazing = _mm256_sub_ps(one, sz);
+                let grazing_squared = _mm256_mul_ps(grazing, grazing);
+                let fresnel = _mm256_fmadd_ps(
+                    _mm256_mul_ps(_mm256_mul_ps(grazing_squared, grazing_squared), grazing),
+                    splat(0.96),
+                    splat(0.04),
+                );
+                let mut specular = _mm256_mul_ps(
+                    _mm256_mul_ps(byte8(surface, 0), inverse_255),
+                    _mm256_sub_ps(one, cloud),
+                );
+                specular = _mm256_mul_ps(specular, _mm256_fmadd_ps(broad, splat(0.03), glossy));
+                specular = _mm256_mul_ps(
+                    _mm256_mul_ps(specular, _mm256_fmadd_ps(fresnel, splat(4.0), one)),
+                    daylight,
+                );
+                let shadow =
+                    _mm256_fnmadd_ps(_mm256_mul_ps(splat(0.45), cloud_shadow), daylight, one);
+                let mut emissive = _mm256_mul_ps(byte8(color, 24), inverse_255);
+                let night = _mm256_sub_ps(one, daylight);
+                emissive = _mm256_mul_ps(
+                    _mm256_mul_ps(emissive, emissive),
+                    _mm256_mul_ps(
+                        _mm256_mul_ps(night, night),
+                        _mm256_fnmadd_ps(splat(0.6), cloud, one),
+                    ),
+                );
+                let haze = _mm256_mul_ps(
+                    grazing_squared,
+                    _mm256_fmadd_ps(grazing, splat(0.25), splat(0.35)),
+                );
+                let haze_light = _mm256_fmadd_ps(
+                    clamp8(_mm256_add_ps(geometric, splat(0.25)), 0.0, 1.0),
+                    splat(1.1),
+                    splat(0.25),
+                );
+                let haze_mix = smoothstep8(-0.35, 0.5, geometric);
+                let haze_keep = _mm256_fnmadd_ps(haze, splat(0.6), one);
+                let cloud_amount = _mm256_mul_ps(cloud, splat(0.8));
+                let lit_light = _mm256_mul_ps(diffuse, shadow);
+
+                let column_index = _mm256_add_epi32(splat_int(column as i32), lane_offsets);
+                let mut hash = _mm256_xor_si256(
+                    _mm256_xor_si256(
+                        _mm256_mullo_epi32(column_index, splat_int(0x8da6b343u32 as i32)),
+                        row_hash,
+                    ),
+                    splat_int(frame.grain_seed as i32),
+                );
+                hash = _mm256_xor_si256(hash, _mm256_srli_epi32::<15>(hash));
+                hash = _mm256_mullo_epi32(hash, splat_int(0x2c1b3c6d));
+                hash = _mm256_xor_si256(hash, _mm256_srli_epi32::<12>(hash));
+                let dither = _mm256_mul_ps(
+                    _mm256_fmsub_ps(
+                        _mm256_cvtepi32_ps(_mm256_and_si256(hash, splat_int(0xFFFF))),
+                        splat(1.0 / 32767.5),
+                        one,
+                    ),
+                    splat(frame.grain_amount),
+                );
+
+                let bloom_position =
+                    _mm256_fmsub_ps(_mm256_cvtepi32_ps(column_index), splat(0.25), splat(0.375));
+                let mut bloom_left = _mm256_cvttps_epi32(_mm256_floor_ps(bloom_position));
+                let bloom_weight = _mm256_sub_ps(bloom_position, _mm256_cvtepi32_ps(bloom_left));
+                let mut bloom_right = _mm256_min_epi32(
+                    _mm256_add_epi32(bloom_left, splat_int(1)),
+                    splat_int(frame.quarter as i32 - 1),
+                );
+                bloom_left = _mm256_max_epi32(bloom_left, _mm256_setzero_si256());
+                bloom_left = _mm256_add_epi32(bloom_left, _mm256_add_epi32(bloom_left, bloom_left));
+                bloom_right =
+                    _mm256_add_epi32(bloom_right, _mm256_add_epi32(bloom_right, bloom_right));
+
+                let mut packed = splat_int(0xFF000000u32 as i32);
+                let mut bright_packed = _mm256_setzero_si256();
+                for component in 0..3 {
+                    let shift = 16 - 8 * component as i32;
+                    let offset = splat_int(component as i32);
+                    let glow = mix8(
+                        _mm256_i32gather_ps::<4>(
+                            row.glow.as_ptr(),
+                            _mm256_add_epi32(bloom_left, offset),
+                        ),
+                        _mm256_i32gather_ps::<4>(
+                            row.glow.as_ptr(),
+                            _mm256_add_epi32(bloom_right, offset),
+                        ),
+                        bloom_weight,
+                    );
+                    let encoded = _mm256_mul_ps(byte8(color, shift), inverse_255);
+                    let albedo = _mm256_mul_ps(
+                        encoded,
+                        _mm256_fmadd_ps(
+                            encoded,
+                            _mm256_fmadd_ps(encoded, splat(0.305_306), splat(0.682_171_1)),
+                            splat(0.012522878),
+                        ),
+                    );
+                    let light = mix8(
+                        splat(frame.key[component]),
+                        splat(frame.warm[component]),
+                        band,
+                    );
+                    let ambient = mix8(
+                        splat(frame.ground_ambient[component]),
+                        splat(frame.sky_ambient[component]),
+                        sky,
+                    );
+                    let mut lit = _mm256_fmadd_ps(
+                        albedo,
+                        _mm256_fmadd_ps(light, lit_light, ambient),
+                        _mm256_mul_ps(splat(frame.rim_color[component]), rim),
+                    );
+                    let cloud_lit = _mm256_mul_ps(
+                        splat(frame.cloud_color[component]),
+                        _mm256_fmadd_ps(light, diffuse, _mm256_mul_ps(ambient, splat(1.6))),
+                    );
+                    lit = mix8(lit, cloud_lit, cloud_amount);
+                    let specular_light = _mm256_mul_ps(specular, light);
+                    let emission = _mm256_mul_ps(emissive, splat(frame.emissive_color[component]));
+                    lit = _mm256_add_ps(lit, _mm256_add_ps(specular_light, emission));
+                    let atmosphere = _mm256_mul_ps(
+                        mix8(
+                            splat(frame.atmosphere_dark[component]),
+                            splat(frame.atmosphere_lit[component]),
+                            haze_mix,
+                        ),
+                        haze_light,
+                    );
+                    let planet = _mm256_mul_ps(
+                        _mm256_add_ps(
+                            _mm256_fmadd_ps(lit, haze_keep, _mm256_mul_ps(atmosphere, haze)),
+                            glow,
+                        ),
+                        splat(frame.exposure),
+                    );
+                    let grade_index = _mm256_cvttps_epi32(_mm256_mul_ps(
+                        tone_map8(planet),
+                        splat(GRADE_STEPS as f32),
+                    ));
+                    let value = _mm256_add_ps(
+                        _mm256_i32gather_ps::<4>(
+                            frame.tables.grade[component].as_ptr(),
+                            grade_index,
+                        ),
+                        dither,
+                    );
+                    let channel_value =
+                        _mm256_cvttps_epi32(clamp8(_mm256_add_ps(value, splat(0.5)), 0.0, 255.0));
+                    packed =
+                        _mm256_or_si256(packed, _mm256_sllv_epi32(channel_value, splat_int(shift)));
+                    let bright_value = _mm256_sub_ps(
+                        _mm256_add_ps(specular_light, emission),
+                        splat(frame.bloom_threshold),
+                    );
+                    let bright_channel = _mm256_cvttps_epi32(clamp8(
+                        _mm256_mul_ps(bright_value, splat(super::BRIGHT_SCALE)),
+                        0.0,
+                        255.0,
+                    ));
+                    bright_packed = _mm256_or_si256(
+                        bright_packed,
+                        _mm256_sllv_epi32(bright_channel, splat_int(shift)),
+                    );
+                }
+                _mm256_storeu_si256(row.line.as_mut_ptr().add(column).cast(), packed);
+                _mm256_storeu_si256(row.bright.as_mut_ptr().add(column).cast(), bright_packed);
+            }
+            column += 8;
+        }
+        frame.render_span::<true, false>(row, column, end);
+    }
 }
