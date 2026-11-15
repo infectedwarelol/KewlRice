@@ -66,10 +66,10 @@ A fresh Arch Linux install with Hyprland already set up (0.56 or newer, since th
 Install the packages:
 
 ```bash
-sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist fish swaybg unzip
+sudo pacman -S --needed git base-devel waybar wofi rofi kitty konsole dolphin mako wtype pipewire-audio pavucontrol python otf-font-awesome noto-fonts grim wl-clipboard python-cairo python-gobject gtk-layer-shell hyprlock plasma-integration btop cmatrix fastfetch playerctl curl ttf-jetbrains-mono-nerd cliphist wl-clip-persist rust fish swaybg unzip
 ```
 
-`base-devel` is there to compile the Alt+Tab globe the first time you switch theme, and `git` is for cloning this repo and the icon theme further down.
+`rust` builds the Alt+Tab globe renderer and the small helper binaries, `base-devel` builds the window-grab plugin, and `git` is for cloning this repo and the icon theme further down.
 
 ## Install
 
@@ -155,7 +155,7 @@ curl -Lo ~/.cache/kewlrice/geodata/ne_50m_land.geojson https://raw.githubusercon
 curl -Lo ~/.cache/kewlrice/geodata/ne_50m_populated_places_simple.geojson https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_populated_places_simple.geojson
 ```
 
-The globe for each theme gets built in the background the first time you switch to it, which takes a few seconds. It's drawn live by a tiny C program that gets compiled the first time, using the `base-devel` you installed above. Until it's ready, Alt+Tab just shows a plain sphere.
+The globe for each theme gets built in the background the first time you switch to it, which takes a few seconds. It's drawn live by a small Rust library that `install.sh` builds. Until it's ready, Alt+Tab just shows a plain sphere.
 
 5. For the themed login screen (it follows whatever theme you used last):
 

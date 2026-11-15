@@ -16,7 +16,7 @@ from pathlib import Path
 
 import cairo
 
-BUILD_VERSION = 7
+BUILD_VERSION = 8
 TEXTURE_WIDTH = 4096
 TEXTURE_HEIGHT = 2048
 RUNTIME_WIDTH = 2048
@@ -33,16 +33,11 @@ GLOBE_ROOT = CACHE_ROOT / "globe"
 LAND_FILE = GEODATA_DIR / "ne_50m_land.geojson"
 PLACES_FILE = GEODATA_DIR / "ne_50m_populated_places_simple.geojson"
 THEME_SWITCH_DIR = Path(__file__).resolve().parent.parent / "theme-switch"
-RENDERER_SOURCE = Path(__file__).resolve().parent / "globe_render.c"
+RENDERER_LIBRARY = Path(__file__).resolve().parent / "libglobe_render.so"
 GLOBE_DIRECTORY_NAME = re.compile(r"[0-9a-f]{16}")
 STALE_STAGING_SECONDS = 3600
 LAYER_NAMES = ("color.mip", "surface.mip")
 BAKE_SEED = 7
-COMPILER_FLAGS = ("-O3", "-march=native", "-ffast-math", "-fPIC", "-shared")
-GCC_TUNING = ("--param", "max-completely-peeled-insns=2000", "-mtune-ctrl=use_gather")
-PARALLEL_FLAGS = (
-    ("-fopenmp", *GCC_TUNING), ("-fopenmp-simd", *GCC_TUNING), ("-fopenmp",), ("-fopenmp-simd",), (),
-)
 WHITE = (1.0, 1.0, 1.0)
 BLACK = (0.0, 0.0, 0.0)
 
@@ -332,37 +327,14 @@ def map_layers(directory):
 
 
 def renderer_library_path():
-    digest = hashlib.sha1(RENDERER_SOURCE.read_bytes() + repr((COMPILER_FLAGS, PARALLEL_FLAGS)).encode()).hexdigest()[:12]
-    return GLOBE_ROOT / f"libglobe-{digest}.so"
-
-
-def compile_renderer():
-    library = renderer_library_path()
-    if library.is_file():
-        return library
-    compiler = shutil.which("cc") or shutil.which("gcc") or shutil.which("clang")
-    if not compiler:
-        raise RuntimeError("no C compiler found, install base-devel")
-    GLOBE_ROOT.mkdir(parents=True, exist_ok=True)
-    staging = library.with_name(f".{library.name}.{os.getpid()}")
-    for parallel in PARALLEL_FLAGS:
-        result = subprocess.run(
-            [compiler, *COMPILER_FLAGS, *parallel, "-o", str(staging), str(RENDERER_SOURCE), "-lm"],
-            capture_output=True, text=True,
-        )
-        if result.returncode == 0:
-            break
-    if result.returncode != 0:
-        staging.unlink(missing_ok=True)
-        raise RuntimeError(result.stderr.strip() or "compiling the globe renderer failed")
-    staging.rename(library)
-    return library
+    return RENDERER_LIBRARY
 
 
 def load_renderer():
-    os.environ.setdefault("OMP_NUM_THREADS", str(len(os.sched_getaffinity(0))))
-    os.environ.setdefault("OMP_DYNAMIC", "true")
-    library = ctypes.CDLL(str(compile_renderer()))
+    library_path = renderer_library_path()
+    if not library_path.is_file():
+        raise RuntimeError(f"globe renderer missing at {library_path}, run install.sh")
+    library = ctypes.CDLL(str(library_path))
     float_pointer = ctypes.POINTER(ctypes.c_float)
     signatures = {
         "globe_mip_levels": ([ctypes.c_int, ctypes.c_int], ctypes.c_int),
@@ -438,7 +410,6 @@ def prune_cache(current):
     if not wanted:
         return
     wanted.add(current.name)
-    library = renderer_library_path().name
     now = time.time()
     for entry in GLOBE_ROOT.iterdir():
         name = entry.name
@@ -447,7 +418,7 @@ def prune_cache(current):
                 shutil.rmtree(entry, ignore_errors=True)
             elif entry.is_dir() and name.startswith(".") and now - entry.stat().st_mtime > STALE_STAGING_SECONDS:
                 shutil.rmtree(entry, ignore_errors=True)
-            elif entry.is_file() and name.startswith("libglobe-") and name.endswith(".so") and name != library:
+            elif entry.is_file() and name.startswith("libglobe-") and name.endswith(".so"):
                 entry.unlink(missing_ok=True)
             elif entry.is_file() and name.startswith(".libglobe-") and now - entry.stat().st_mtime > STALE_STAGING_SECONDS:
                 entry.unlink(missing_ok=True)

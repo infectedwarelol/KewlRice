@@ -32,6 +32,7 @@ cp wallpapers/* ~/.config/hypr/wallpapers/
 cargo build --release --manifest-path rust/Cargo.toml
 install -m 755 rust/target/release/kewl-hypr ~/.config/hypr/window-switcher/kewl-hypr
 install -m 755 rust/target/release/popup-request ~/.config/hypr/popups/popup-request
+install -m 644 rust/target/release/libglobe_render.so ~/.config/hypr/window-switcher/libglobe_render.so
 
 chmod +x ~/.config/hypr/window-switcher/window_switcher.py ~/.config/hypr/window-switcher/ui_daemon.py
 chmod +x ~/.config/hypr/snap-layouts/snap_layouts.py
