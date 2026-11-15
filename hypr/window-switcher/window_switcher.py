@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import fcntl
+import json
 import os
 import socket
+import subprocess
 import sys
 import time
+from pathlib import Path
 
 from desktop_icons import icon_names_by_window_class
-from hyprland_ipc import list_windows, switch_to_window
 from keypress_tracker import (
     LOCK_FILE,
     alt_released_after,
@@ -17,6 +19,15 @@ from keypress_tracker import (
 
 STALE_PRESS_SECONDS = 2
 UI_SOCKET = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "kewl-ui.sock")
+KEWL_HYPR = str(Path(__file__).resolve().parent / "kewl-hypr")
+
+
+def list_windows():
+    return json.loads(subprocess.run([KEWL_HYPR, "clients"], capture_output=True, text=True).stdout or "[]")
+
+
+def switch_to_window(window):
+    subprocess.run([KEWL_HYPR, "switch", json.dumps(window)])
 
 
 def send_to_daemon(message):
